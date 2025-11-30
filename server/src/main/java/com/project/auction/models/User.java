@@ -9,7 +9,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 
 @Entity
-@Table(name = "Users",
+@Table(name = "users",
         uniqueConstraints = {
             @UniqueConstraint(columnNames = "email")
         })
@@ -17,7 +17,7 @@ public class User{
 
     @Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id_user;
+    private Long id;
     private String name;
     private String password;
     private String email;
@@ -33,7 +33,7 @@ public class User{
     }
 
     public Long getId(){
-        return id_user;
+        return id;
     }
 
     public String getName(){
@@ -53,7 +53,7 @@ public class User{
     }
 
     public void setId(Long id){
-        id_user = id;
+        this.id= id;
     }
 
     public void setName(String name){

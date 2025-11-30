@@ -1,9 +1,5 @@
 package com.project.auction.controller;
 
-import java.util.stream.Collectors;
-import java.util.HashSet;
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -13,16 +9,20 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.project.auction.service.UserDetailsImpl;
+import com.project.auction.config.jwt.JwtUtils;
 import com.project.auction.models.User;
 import com.project.auction.repository.UserRepository;
 import com.project.auction.pojo.LoginRequest;
 import com.project.auction.pojo.SignupRequest;
 import com.project.auction.pojo.MessageResponse;
+import com.project.auction.pojo.JwtResponse;
 
 @RestController
+@RequestMapping("/api/auth")
 public class AuthController {
 
     @Autowired
@@ -33,6 +33,9 @@ public class AuthController {
 
     @Autowired
 	PasswordEncoder passwordEncoder;
+
+	@Autowired
+	JwtUtils jwtUtils;
     
     @PostMapping("/signin")
 	public ResponseEntity<?> authUser(@RequestBody LoginRequest loginRequest) {
@@ -42,24 +45,19 @@ public class AuthController {
 						loginRequest.getPassword()));
 		
 		SecurityContextHolder.getContext().setAuthentication(authentication);
-		// String jwt = jwtUtils.generateJwtToken(authentication);
+		String jwt = jwtUtils.generateJwtToken(authentication);
 		
 		UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-		List<String> roles = userDetails.getAuthorities().stream()
-				.map(item -> item.getAuthority())
-				.collect(Collectors.toList());
 		
-		// return ResponseEntity.ok(new JwtResponse(jwt, 
-		// 		userDetails.getId(), 
-		// 		userDetails.getUsername(), 
-		// 		userDetails.getEmail(), 
-		// 		roles));
-        return ResponseEntity.ok(new MessageResponse("Success"));
+		return ResponseEntity.ok(new JwtResponse(jwt, 
+				userDetails.getId(), 
+				userDetails.getUsername(), 
+				userDetails.getEmail()));
 	}
 
     @PostMapping("/signup")
 	public ResponseEntity<?> registerUser(@RequestBody SignupRequest signupRequest) {
-		
+		System.out.println("start signup");
 		if (userRespository.existsByEmail(signupRequest.getEmail())) {
 			return ResponseEntity
 					.badRequest()
@@ -71,6 +69,7 @@ public class AuthController {
 				passwordEncoder.encode(signupRequest.getPassword()));
 		
 		userRespository.save(user);
+
 		return ResponseEntity.ok(new MessageResponse("User CREATED"));
 	}
 }
