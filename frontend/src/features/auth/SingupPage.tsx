@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import axios from 'axios'
-
-import Modal from '../../components/modals/Modal'
+import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import Modal from '../../components/modals/Modal';
 
 const SingupPage: React.FC = () => {
+  const navigate = useNavigate();
   const [username, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -11,9 +13,10 @@ const SingupPage: React.FC = () => {
   const [error, setError] = React.useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = React.useState(false);
 
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+   
+    
     try {
         const response = await axios.post('http://localhost:8080/api/auth/signup', {
       username,
@@ -22,6 +25,7 @@ const SingupPage: React.FC = () => {
     });
     console.log('Успешная регистрация:', response.data);
     // Перенаправление на /login или главную
+    
   } catch (error) {
     console.error('Ошибка регистрации:', error);
     const errorMessage = error instanceof Error ? error.message: String(error);
@@ -29,7 +33,9 @@ const SingupPage: React.FC = () => {
     setIsModalOpen(true);
   }
   };
-
+  const Click = ()=>{
+    navigate('/signin');    
+  };
   return (
     <div>
       <h2>Регистрация</h2>
@@ -61,13 +67,16 @@ const SingupPage: React.FC = () => {
             required
           />
         </div>
-        <button type="submit">Зарегистрироваться</button>
+        <button type="submit" onClick={Click}>Зарегистрироваться</button>
       </form>
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
         <h2>Ошибка</h2>
         <p>{error}</p>
         <button onClick={() => setIsModalOpen(false)}>Закрыть</button>
       </Modal>
+      <p>Уже есть акаунт? 
+            <Link to="/signin">Войти</Link>
+            </p>
     </div>
   );
 };
