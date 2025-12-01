@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios'
 
 const SinginPage: React.FC = () => {
-  const [name, setName] = useState('');
+  const [username, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
@@ -10,7 +10,7 @@ const SinginPage: React.FC = () => {
     e.preventDefault();
     try {
         const response = await axios.post('http://localhost:8080/api/auth/signin', {
-      name,
+      username,
       email,
       password
     },
@@ -32,7 +32,7 @@ const SinginPage: React.FC = () => {
           <label>Имя:</label>
           <input
             type="text"
-            value={name}
+            value={username}
             onChange={(e) => setName(e.target.value)}
             required
           />
