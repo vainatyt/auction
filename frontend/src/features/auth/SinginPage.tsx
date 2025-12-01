@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 import axios from 'axios'
+import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 const SinginPage: React.FC = () => {
+  const navigate = useNavigate();
   const [username, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -10,7 +13,7 @@ const SinginPage: React.FC = () => {
     e.preventDefault();
     try {
         const response = await axios.post('http://localhost:8080/api/auth/signin', {
-      username,
+      name,
       email,
       password
     },
@@ -23,7 +26,9 @@ const SinginPage: React.FC = () => {
     console.error('Ошибка входа:', error);
   }
   };
-
+  const To_Main_Page =()=>{
+    navigate('/main');
+  }
   return (
     <div>
       <h2>Вход в систему</h2>
@@ -54,9 +59,13 @@ const SinginPage: React.FC = () => {
             onChange={(e) => setPassword(e.target.value)}
             required
           />
+          
         </div>
-        <button type="submit">Войти</button>
+        <button type="submit" onClick={To_Main_Page}>Войти</button>
       </form>
+      <p>Еще нет акаунта? 
+      <Link to="/signup">Зарегистрироваться</Link>
+      </p>
     </div>
   );
 };
