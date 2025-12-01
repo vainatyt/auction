@@ -39,6 +39,7 @@ public class AuthController {
     
     @PostMapping("/signin")
 	public ResponseEntity<?> authUser(@RequestBody LoginRequest loginRequest) {
+		System.out.println("start signin");
 		Authentication authentication = authenticationManager
 				.authenticate(new UsernamePasswordAuthenticationToken(
 						loginRequest.getUsername(), 
@@ -50,7 +51,6 @@ public class AuthController {
 		UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
 		
 		return ResponseEntity.ok(new JwtResponse(jwt, 
-				userDetails.getId(), 
 				userDetails.getUsername(), 
 				userDetails.getEmail()));
 	}
@@ -65,8 +65,8 @@ public class AuthController {
 		}
 		
 		User user = new User(signupRequest.getName(), 
-				signupRequest.getEmail(),
-				passwordEncoder.encode(signupRequest.getPassword()));
+				passwordEncoder.encode(signupRequest.getPassword()),
+				signupRequest.getEmail());
 		
 		userRespository.save(user);
 
