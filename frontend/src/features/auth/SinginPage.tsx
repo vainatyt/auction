@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios'
 import Cookies from 'js-cookie';
+import { Link } from 'react-router-dom';
 
 import Modal from '../../components/modals/Modal';
-import OpenApi from '../../api/OpenApi';
+import FreeApi from '../../api/FreeApi'
 
 const SinginPage: React.FC = () => {
   const [username, setName] = useState('');
@@ -19,7 +20,7 @@ const SinginPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await OpenApi.post('/api/auth/signin', {
+      const response = await FreeApi.post('/api/auth/signin', {
       username,
       email,
       password
@@ -53,7 +54,9 @@ const SinginPage: React.FC = () => {
       setIsModalOpen(true);
     }
   };
-
+  const To_Main_Page =()=>{
+    navigate('/main');
+  }
   return (
     <div>
       <h2>Вход в систему</h2>
@@ -84,14 +87,18 @@ const SinginPage: React.FC = () => {
             onChange={(e) => setPassword(e.target.value)}
             required
           />
+          
         </div>
-        <button type="submit">Войти</button>
+        <button type="submit" onClick={To_Main_Page}>Войти</button>
       </form>
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
         <h2>Ошибка</h2>
         <p>{error}</p>
         <button onClick={() => setIsModalOpen(false)}>Закрыть</button>
       </Modal>
+      <p>Еще нет акаунта? 
+      <Link to="/signup">Зарегистрироваться</Link>
+      </p>
     </div>
   );
 };

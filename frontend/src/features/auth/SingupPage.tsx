@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios'
-import Cookies from 'js-cookie';
+import { Link } from 'react-router-dom';
+
 
 import Modal from '../../components/modals/Modal';
-import OpenApi from '../../api/OpenApi'
+import FreeApi from '../../api/FreeApi'
 
 const SingupPage: React.FC = () => {
   const [username, setName] = useState('');
@@ -19,7 +20,7 @@ const SingupPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await OpenApi.post('/api/auth/signup', {
+      const response = await FreeApi.post('/api/auth/signup', {
       username,
       email,
       password
@@ -35,7 +36,7 @@ const SingupPage: React.FC = () => {
           } else if (error.response.data && typeof error.response.data.message === 'string') {
             errorMessage = error.response.data.message;
           } else {
-            errorMessage = `Ошибка сервера: ${error.response.status}`;
+            errorMessage = `Ошибка: ${error.response.status}`;
           }
         } else {
           errorMessage = error.message;
@@ -87,6 +88,9 @@ const SingupPage: React.FC = () => {
         <p>{error}</p>
         <button onClick={() => setIsModalOpen(false)}>Закрыть</button>
       </Modal>
+      <p>Есть акаунта? 
+        <Link to="/signin">Войти</Link>
+      </p>
     </div>
   );
 };
