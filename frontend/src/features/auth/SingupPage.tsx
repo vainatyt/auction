@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios'
+import Cookies from 'js-cookie';
 
-import Modal from '../../components/modals/Modal'
+import Modal from '../../components/modals/Modal';
+import OpenApi from '../../api/OpenApi'
 
 const SingupPage: React.FC = () => {
   const [username, setName] = useState('');
@@ -11,23 +14,39 @@ const SingupPage: React.FC = () => {
   const [error, setError] = React.useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = React.useState(false);
 
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-        const response = await axios.post('http://localhost:8080/api/auth/signup', {
+      const response = await OpenApi.post('/api/auth/signup', {
       username,
       email,
       password
     });
-    console.log('Успешная регистрация:', response.data);
-    // Перенаправление на /login или главную
-  } catch (error) {
-    console.error('Ошибка регистрации:', error);
-    const errorMessage = error instanceof Error ? error.message: String(error);
-    setError(errorMessage || 'Unknown error');
-    setIsModalOpen(true);
-  }
+    console.log('Успешный регистрация:', response.data);
+    navigate('/signin');
+    } catch (error: unknown) { 
+      let errorMessage = 'Unknown error';
+      if (axios.isAxiosError(error)) {
+        if (error.response) {
+          if (error.response.status === 401) {
+            errorMessage = 'Неверный логин или пароль';
+          } else if (error.response.data && typeof error.response.data.message === 'string') {
+            errorMessage = error.response.data.message;
+          } else {
+            errorMessage = `Ошибка сервера: ${error.response.status}`;
+          }
+        } else {
+          errorMessage = error.message;
+        }
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+
+      setError(errorMessage);
+      setIsModalOpen(true);
+    }
   };
 
   return (
