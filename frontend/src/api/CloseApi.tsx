@@ -8,7 +8,7 @@ const CloseApi = axios.create({
 
 // Добавляем интерцептор запросов
 CloseApi.interceptors.request.use((config) => {
-  const token = Cookies.get('jwt_token');
+  const token = Cookies.get('auction_jwt_token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }

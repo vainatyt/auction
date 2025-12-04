@@ -7,6 +7,8 @@ import { Link } from 'react-router-dom';
 import Modal from '../../components/modals/Modal';
 import FreeApi from '../../api/FreeApi'
 
+import '../../styles/AuthPage.css';
+
 const SingupPage: React.FC = () => {
   const [username, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -51,46 +53,42 @@ const SingupPage: React.FC = () => {
   };
 
   return (
-    <div>
-      <h2>Регистрация</h2>
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>Имя:</label>
-          <input
-            type="text"
-            value={username}
-            onChange={(e) => setName(e.target.value)}
-            required
-          />
-        </div>
-        <div>
-          <label>Email:</label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </div>
-        <div>
-          <label>Пароль:</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </div>
-        <button type="submit">Зарегистрироваться</button>
+    <div className="auth-container">
+      <h2 className="auth-title">Регистрация</h2>
+      <form className="auth-form" onSubmit={handleSubmit}>
+        <input className="auth-input"
+          type="text"
+          placeholder="имя"
+          value={username}
+          onChange={(e) => setName(e.target.value)}
+          required
+        />
+        <input className="auth-input"
+          type="email"
+          placeholder="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+        <input className="auth-input"
+          type="password"
+          placeholder="Пароль"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+        <button type="submit" className='auth-button'>Зарегистрироваться</button>
       </form>
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
         <h2>Ошибка</h2>
         <p>{error}</p>
-        <button onClick={() => setIsModalOpen(false)}>Закрыть</button>
       </Modal>
-      <p>Есть акаунта? 
-        <Link to="/signin">Войти</Link>
-      </p>
+        <div className="auth-footer">
+          <label>
+            Есть акаунт? 
+          </label>
+          <Link to="/signin">Войти</Link>
+        </div>
     </div>
   );
 };

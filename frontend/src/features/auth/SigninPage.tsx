@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios'
-import Cookies from 'js-cookie';
 import { Link } from 'react-router-dom';
 
 import Modal from '../../components/modals/Modal';
 import FreeApi from '../../api/FreeApi'
+import { useAuth } from '../../context/AuthContext'
 
 const SinginPage: React.FC = () => {
   const [username, setName] = useState('');
@@ -14,6 +14,8 @@ const SinginPage: React.FC = () => {
 
   const [error, setError] = React.useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = React.useState(false);
+
+  const { login } = useAuth();
 
   const navigate = useNavigate();
 
@@ -26,11 +28,7 @@ const SinginPage: React.FC = () => {
       password
     });
     console.log('Успешный вход:', response.data);
-    Cookies.set("jwt_token", response.data.token, {
-      expires: new Date(new Date().getTime() + 60 * 60 * 1000), // сохраняем на час
-      secure: true, // только по https
-      sameSite: "strict", // политика SameSite для защиты CSRF
-    });
+    login(response.data.token);
     navigate('/main');
     } catch (error: unknown) { 
       let errorMessage = 'Unknown error';
@@ -58,47 +56,42 @@ const SinginPage: React.FC = () => {
     navigate('/main');
   }
   return (
-    <div>
-      <h2>Вход в систему</h2>
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>Имя:</label>
-          <input
-            type="text"
-            value={username}
-            onChange={(e) => setName(e.target.value)}
-            required
-          />
-        </div>
-        <div>
-          <label>Email:</label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </div>
-        <div>
-          <label>Пароль:</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-          
-        </div>
-        <button type="submit" onClick={To_Main_Page}>Войти</button>
+    <div className="auth-container">
+      <h2 className="auth-title">Вход</h2>
+      <form className="auth-form" onSubmit={handleSubmit}>
+        <input className="auth-input"
+          type="text"
+          placeholder="имя"
+          value={username}
+          onChange={(e) => setName(e.target.value)}
+          required
+        />
+        <input className="auth-input"
+          type="email"
+          placeholder="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+        <input className="auth-input"
+          type="password"
+          placeholder="Пароль"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+        <button type="submit" className='auth-button'>Войти</button>
       </form>
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
         <h2>Ошибка</h2>
         <p>{error}</p>
-        <button onClick={() => setIsModalOpen(false)}>Закрыть</button>
       </Modal>
-      <p>Еще нет акаунта? 
-      <Link to="/signup">Зарегистрироваться</Link>
-      </p>
+        <div className="auth-footer">
+          <label>
+            Нет акаунта? 
+          </label>
+          <Link to="/signup">Зарегистрироваться</Link>
+        </div>
     </div>
   );
 };

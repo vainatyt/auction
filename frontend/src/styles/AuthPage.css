@@ -1,0 +1,95 @@
+.auth-container {
+  max-width: 400px;
+  margin: 5rem auto;
+  padding: 2rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  border-radius: 10px;
+  background-color: #fff;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.auth-title {
+  font-size: 1.8rem;
+  margin-bottom: 1.5rem;
+  color: #333;
+  text-align: center;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.auth-input {
+  padding: 0.8rem 1rem;
+  font-size: 1rem;
+  border: 1px solid #bbb;
+  border-radius: 6px;
+  transition: border-color 0.3s ease;
+}
+
+.auth-input:focus {
+  outline: none;
+  border-color: #007bff;
+}
+
+.auth-button {
+  padding: 0.9rem;
+  font-size: 1rem;
+  background-color: #007bff;
+  border: none;
+  border-radius: 6px;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.auth-button:hover {
+  background-color: #0056b3;
+}
+
+.auth-error {
+  color: #dc3545;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.auth-footer {
+  margin-top: 1rem;
+  text-align: center;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.form-group {
+  display: flex;
+  align-items: center;
+  gap: 1rem; /* расстояние между label и input */
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  min-width: 80px; /* фиксированная ширина label */
+  font-weight: 500;
+  color: #333;
+  font-size: 0.95rem;
+}
+
+.form-group input {
+  flex: 1; /* занимает всё оставшееся место */
+  max-width: 300px; /* ограничение ширины */
+}
+
+.auth-button {
+  padding: 0.75rem 1.5rem; /* внутренние отступы изменяют размер кнопки пропорционально тексту */
+  font-size: 1rem;          /* размер текста */
+  min-width: max-content;   /* ширина минимальна, чтобы вместить текст */
+  border: none;
+  border-radius: 12px;
+  background-color: #007bff;
+  color: white;
+  cursor: pointer;
+  white-space: nowrap;      /* не переносить текст */
+  transition: background-color 0.3s ease;
+}   

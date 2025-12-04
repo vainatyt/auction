@@ -1,20 +1,34 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import SinginPage from './features/auth/SinginPage';
-import SingupPage from './features/auth/SingupPage';
-import MainPage from './features/auth/MainPage';
-import Test from './features/auth/Test';
+import SigninPage from './features/auth/SigninPage';
+import SignupPage from './features/auth/SignupPage';
+import MainPage from './features/MainPage';
+import { AuthProvider } from './context/AuthContext';
+import { ProtectedRoute } from './components/ProtectedRoute';
 
 function App() {
   return (
     <Router>
-      <Routes>
-        <Route path="/" element={<Navigate to="/signup" replace />} />
-        <Route path="/signin" element={<SinginPage />} />
-        <Route path="/signup" element={<SingupPage />} />
-        <Route path="/main" element={<MainPage />} />
-      </Routes>
+      <AuthProvider>
+        <Routes>
+          {/* Публичные маршруты — без защиты */}
+          <Route path="/" element={<Navigate to="/signup" replace />} />
+          <Route path="/signin" element={<SigninPage />} />
+          <Route path="/signup" element={<SignupPage />} />
+          
+          {/* Защищенный маршрут */}
+          <Route 
+            path="/main" 
+            element={
+              <ProtectedRoute>
+                <MainPage />
+              </ProtectedRoute>
+            } 
+          />
+        </Routes>
+      </AuthProvider>
     </Router>
   );
 }
+
 
 export default App

@@ -1,6 +1,8 @@
 import React, { ReactNode, MouseEvent, useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 
+import '../../styles/Modal.css';
+
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -8,21 +10,20 @@ interface ModalProps {
 }
 
 const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children }) => {
-
-  const handleContentClick = (e: MouseEvent<HTMLDivElement>) => {
-    e.stopPropagation();
-  }; 
-
   if (!isOpen) return null;
 
-  return ReactDOM.createPortal(
-    <div>
-      <div>
+  return (
+    <>
+      <div
+        className='background' 
+        onClick={onClose}
+      />
+
+      <div className='window'>
         {children}
+        <button onClick={onClose} style={{ marginTop: '1rem' }}>Закрыть</button>
       </div>
-      <div onClick={onClose}/>
-    </div>,
-    document.body
+    </>
   );
 };
 
