@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.*;
 import com.project.auction.models.Lot;
 import com.project.auction.payload.request.CreateLotRequest;
 import com.project.auction.service.LotService;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/lots")
@@ -18,7 +19,13 @@ public class LotController {
 
     @PostMapping
     public ResponseEntity<Lot> createLot(@RequestBody CreateLotRequest request) {
-        Lot lot = lotService.createLot(request);
+        Lot lot = lotService.createLot(request, null);
         return ResponseEntity.ok(lot);
+    }
+
+    @GetMapping
+    public List<Lot> getAll() {
+        return lotService.getAll();
+
     }
 }

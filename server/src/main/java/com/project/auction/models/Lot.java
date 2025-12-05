@@ -25,11 +25,14 @@ public class Lot {
     @Column(name = "rate_step", nullable = false)
     private BigDecimal rateStep;
 
-    @Column(name = "id_buyer")
-    private Long buyerId;
+    @ManyToOne
+    @JoinColumn(name = "id_buyer")
+    private User buyer;
 
-    @Column(name = "id_good", nullable = false)
-    private Long goodId;
+    @ManyToOne
+    @JoinColumn(name = "id_good", nullable = false)
+    private Goods goods;
+
 
     // пустой конструктор обязателен для JPA
     public Lot() {
@@ -77,19 +80,19 @@ public class Lot {
         this.rateStep = rateStep;
     }
 
-    public Long getBuyerId() {
-        return buyerId;
+    public User getBuyer() {
+        return buyer;
     }
 
-    public void setBuyerId(Long buyerId) {
-        this.buyerId = buyerId;
+    public void setBuyer(User buyer) {
+        this.buyer = buyer;
     }
 
-    public Long getGoodId() {
-        return goodId;
+    public Goods getGoods() {
+        return goods;
     }
 
-    public void setGoodId(Long goodId) {
-        this.goodId = goodId;
+    public void setGoods(Goods goods) {
+        this.goods = goods;
     }
 }
