@@ -1,37 +1,36 @@
 package com.project.auction.models;
 
-import jakarta.persistence.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Table;
+import org.springframework.data.relational.core.mapping.Column;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-@Entity
 @Table(name = "lots")
 public class Lot {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_lot")
+    @Column("id_lot")
     private Long id;
 
-    @Column(name = "start_auction", nullable = false)
+    @Column("start_auction")
     private LocalDateTime startAuction;
 
-    @Column(name = "end_auction", nullable = false)
+    @Column("end_auction")
     private LocalDateTime endAuction;
 
-    @Column(name = "current_cost", nullable = false)
+    @Column("current_cost")
     private BigDecimal currentCost;
 
-    @Column(name = "rate_step", nullable = false)
+    @Column("rate_step")
     private BigDecimal rateStep;
 
-    @Column(name = "id_buyer")
+    @Column("id_buyer")
     private Long buyerId;
 
-    @Column(name = "id_good", nullable = false)
+    @Column("id_good")
     private Long goodId;
 
-    // пустой конструктор обязателен для JPA
     public Lot() {
     }
 
