@@ -1,4 +1,4 @@
-package com.project.auction.payload.request;
+package com.project.auction.pojo;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -7,7 +7,7 @@ public class CreateLotRequest {
 
     private LocalDateTime startAuction;
     private LocalDateTime endAuction;
-    private BigDecimal startCost;
+    private BigDecimal currentCost;
     private BigDecimal rateStep;
     private Long goodId;
 
@@ -27,12 +27,12 @@ public class CreateLotRequest {
         this.endAuction = endAuction;
     }
 
-    public BigDecimal getStartCost() {
-        return startCost;
+    public BigDecimal getCurrentCost() {
+        return currentCost;
     }
 
-    public void setStartCost(BigDecimal startCost) {
-        this.startCost = startCost;
+    public void setCurrentCost(BigDecimal currentCost) {
+        this.currentCost = currentCost;
     }
 
     public BigDecimal getRateStep() {

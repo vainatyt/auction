@@ -7,7 +7,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import com.project.auction.models.Lot;
-import com.project.auction.payload.request.CreateLotRequest;
+import com.project.auction.pojo.CreateLotRequest;
 import com.project.auction.repository.LotRepository;
 
 @Service
@@ -20,7 +20,7 @@ public class LotService {
         Lot lot = new Lot();
         lot.setStartAuction(req.getStartAuction());
         lot.setEndAuction(req.getEndAuction());
-        lot.setCurrentCost(req.getStartCost());
+        lot.setCurrentCost(req.getCurrentCost());
         lot.setRateStep(req.getRateStep());
         lot.setGoodId(req.getGoodId());
         return lotRepository.save(lot);
