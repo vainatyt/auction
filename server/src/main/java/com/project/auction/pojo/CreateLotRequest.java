@@ -1,4 +1,4 @@
-package com.project.auction.payload.request;
+package com.project.auction.pojo;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -23,6 +23,16 @@ public class CreateLotRequest {
     }
 
     // ----- goods -----
+
+    private Long goodId;
+
+    public Long getGoodId() {
+        return goodId;
+    }
+
+    public void setGoodId(Long goodId) {
+        this.goodId = goodId;
+    }
 
     public String getGoodsName() {
         return goodsName;

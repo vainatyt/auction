@@ -1,37 +1,27 @@
 package com.project.auction.models;
 
-import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "comments")
 public class Comment {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_comment")
     private Long id;
-
-    // кто написал комментарий
-    @ManyToOne
-    @JoinColumn(name = "id_commentator", nullable = false)
-    private User commentator;
-
-    // кому адресован (владельцу товара/покупателю и т.п.)
-    @ManyToOne
-    @JoinColumn(name = "id_addressee", nullable = false)
-    private User addressee;
-
-    @Column(name = "rating", nullable = false)
+    private Long commentatorId; // id_commentator
+    private Long addresseeId;   // id_addressee
     private Integer rating;
-
-    @Column(name = "review", nullable = false)
     private String review;
-
-    @Column(name = "data", nullable = false)
-    private LocalDateTime date;   // поле data в БД → date в Java
+    private LocalDateTime date;
 
     public Comment() {
+    }
+
+    public Comment(Long id, Long commentatorId, Long addresseeId,
+                   Integer rating, String review, LocalDateTime date) {
+        this.id = id;
+        this.commentatorId = commentatorId;
+        this.addresseeId = addresseeId;
+        this.rating = rating;
+        this.review = review;
+        this.date = date;
     }
 
     public Long getId() {
@@ -42,20 +32,20 @@ public class Comment {
         this.id = id;
     }
 
-    public User getCommentator() {
-        return commentator;
+    public Long getCommentatorId() {
+        return commentatorId;
     }
 
-    public void setCommentator(User commentator) {
-        this.commentator = commentator;
+    public void setCommentatorId(Long commentatorId) {
+        this.commentatorId = commentatorId;
     }
 
-    public User getAddressee() {
-        return addressee;
+    public Long getAddresseeId() {
+        return addresseeId;
     }
 
-    public void setAddressee(User addressee) {
-        this.addressee = addressee;
+    public void setAddresseeId(Long addresseeId) {
+        this.addresseeId = addresseeId;
     }
 
     public Integer getRating() {

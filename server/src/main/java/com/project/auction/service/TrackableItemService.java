@@ -31,7 +31,7 @@ public class TrackableItemService {
 
         // не добавлять дубликаты
         if (trackableItemRepository.findByUserAndLot(user, lot).isEmpty()) {
-            TrackableItem item = new TrackableItem(lot, user);
+            TrackableItem item = new TrackableItem(lot.getId(), user.getId());
             trackableItemRepository.save(item);
         }
     }

@@ -1,54 +1,31 @@
 package com.project.auction.models;
 
-import jakarta.persistence.*;
-
-@Entity
-@Table(name = "trackable_items")
 public class TrackableItem {
 
-    @EmbeddedId
-    private TrackableItemId id;
-
-    @ManyToOne
-    @MapsId("idLot")
-    @JoinColumn(name = "id_lot", nullable = false)
-    private Lot lot;
-
-    @ManyToOne
-    @MapsId("idUser")
-    @JoinColumn(name = "id_user", nullable = false)
-    private User user;
+    private Long lotId;   // id_lot
+    private Long userId;  // id_user
 
     public TrackableItem() {
     }
 
-    public TrackableItem(Lot lot, User user) {
-        this.lot = lot;
-        this.user = user;
-        this.id = new TrackableItemId(lot.getId(), user.getId());
+    public TrackableItem(Long lotId, Long userId) {
+        this.lotId = lotId;
+        this.userId = userId;
     }
 
-    public TrackableItemId getId() {
-        return id;
+    public Long getLotId() {
+        return lotId;
     }
 
-    public void setId(TrackableItemId id) {
-        this.id = id;
+    public void setLotId(Long lotId) {
+        this.lotId = lotId;
     }
 
-    public Lot getLot() {
-        return lot;
+    public Long getUserId() {
+        return userId;
     }
 
-    public void setLot(Lot lot) {
-        this.lot = lot;
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
+    public void setUserId(Long userId) {
+        this.userId = userId;
     }
 }

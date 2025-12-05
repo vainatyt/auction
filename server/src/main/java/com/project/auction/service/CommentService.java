@@ -2,7 +2,7 @@ package com.project.auction.service;
 
 import com.project.auction.models.Comment;
 import com.project.auction.models.User;
-import com.project.auction.payload.request.CreateCommentRequest;
+import com.project.auction.pojo.CreateCommentRequest;
 import com.project.auction.repository.CommentRepository;
 import com.project.auction.repository.UserRepository;
 import org.springframework.stereotype.Service;
@@ -26,12 +26,12 @@ public class CommentService {
     public Comment createComment(CreateCommentRequest request, Long commentatorId) {
         User commentator = userRepository.findById(commentatorId)
                 .orElseThrow(() -> new RuntimeException("Commentator not found"));
-        User addressee = userRepository.findById(request.getAddresseeId())
+        userRepository.findById(request.getAddresseeId())
                 .orElseThrow(() -> new RuntimeException("Addressee not found"));
 
         Comment comment = new Comment();
-        comment.setCommentator(commentator);
-        comment.setAddressee(addressee);
+        comment.setCommentatorId(commentator.getId()); 
+        comment.setAddresseeId(commentator.getId());
         comment.setRating(request.getRating());
         comment.setReview(request.getReview());
         comment.setDate(LocalDateTime.now());

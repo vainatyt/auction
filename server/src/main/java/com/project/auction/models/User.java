@@ -1,27 +1,17 @@
 package com.project.auction.models;
 
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Table;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
+@Table(name = "users")
+public class User{
 
-@Entity
-@Table(name = "users",
-        uniqueConstraints = {
-            @UniqueConstraint(columnNames = "email")
-        })
-    public class User{
-
-        @Id
-        @GeneratedValue(strategy = GenerationType.IDENTITY)
-        private Long id;
-        private String name;
-        private String password;
-        private String email;
-        private double rating;
+    @Id
+    private Long id;
+    private String name;
+    private String password;
+    private String email;
+    private double rating;
     
     public User(){    
     }

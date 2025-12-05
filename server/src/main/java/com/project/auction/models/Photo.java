@@ -1,23 +1,20 @@
 package com.project.auction.models;
 
-import jakarta.persistence.*;
+import java.util.UUID;
 
-@Entity
-@Table(name = "photo")
 public class Photo {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @ManyToOne
-    @JoinColumn(name = "id_good", nullable = false)
-    private Goods goods;
-
-    @Column(name = "uuid", columnDefinition = "uuid", nullable = false)
-    private java.util.UUID uuid;
+    private Long id;        // id в таблице, если есть автоинкремент PK
+    private Long goodId;    // колонка id_good
+    private UUID uuid;      // колонка uuid
 
     public Photo() {
+    }
+
+    public Photo(Long id, Long goodId, UUID uuid) {
+        this.id = id;
+        this.goodId = goodId;
+        this.uuid = uuid;
     }
 
     public Long getId() {
@@ -28,19 +25,19 @@ public class Photo {
         this.id = id;
     }
 
-    public Goods getGoods() {
-        return goods;
+    public Long getGoodId() {
+        return goodId;
     }
 
-    public void setGoods(Goods goods) {
-        this.goods = goods;
+    public void setGoodId(Long goodId) {
+        this.goodId = goodId;
     }
 
-    public java.util.UUID getUuid() {
+    public UUID getUuid() {
         return uuid;
     }
 
-    public void setUuid(java.util.UUID uuid) {
+    public void setUuid(UUID uuid) {
         this.uuid = uuid;
     }
 }

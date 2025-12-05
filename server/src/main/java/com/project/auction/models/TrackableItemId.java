@@ -1,11 +1,8 @@
 package com.project.auction.models;
 
-import jakarta.persistence.Embeddable;
-
 import java.io.Serializable;
 import java.util.Objects;
 
-@Embeddable
 public class TrackableItemId implements Serializable {
 
     private Long idLot;
