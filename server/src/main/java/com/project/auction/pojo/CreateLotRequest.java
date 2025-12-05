@@ -25,7 +25,7 @@ public class CreateLotRequest {
     // ----- goods -----
 
     private Long goodId;
-
+    
     public Long getGoodId() {
         return goodId;
     }
@@ -52,6 +52,14 @@ public class CreateLotRequest {
 
     // ----- lot -----
 
+    public BigDecimal  getRateStep() {
+        return rateStep;
+    }
+
+    public void setRateStep(BigDecimal  rateStep) {
+        this.rateStep = rateStep;
+    }
+
     public BigDecimal getStartPrice() {
         return startPrice;
     }
@@ -60,13 +68,6 @@ public class CreateLotRequest {
         this.startPrice = startPrice;
     }
 
-    public BigDecimal getRateStep() {
-        return rateStep;
-    }
-
-    public void setRateStep(BigDecimal rateStep) {
-        this.rateStep = rateStep;
-    }
 
     public LocalDateTime getStartAuction() {
         return startAuction;

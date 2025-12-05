@@ -20,7 +20,11 @@ public class LotService {
         Lot lot = new Lot();
         lot.setStartAuction(req.getStartAuction());
         lot.setEndAuction(req.getEndAuction());
+<<<<<<< HEAD
         lot.setCurrentCost(req.getStartPrice());
+=======
+        lot.setCurrentCost(req.getCurrentCost());
+>>>>>>> d081650869dd4266ebcea1ed93412813fcb2b3e9
         lot.setRateStep(req.getRateStep());
         lot.setGoodId(req.getGoodId());
         return lotRepository.save(lot);

@@ -1,4 +1,4 @@
-package com.project.auction.payload.request;
+package com.project.auction.pojo;
 
 public class CreateCommentRequest {
 

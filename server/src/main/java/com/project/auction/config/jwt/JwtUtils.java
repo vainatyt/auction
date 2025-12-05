@@ -45,10 +45,13 @@ public class JwtUtils {
 	public boolean validateJwtToken(String jwt) {
 		try {
             Jwts.parser().verifyWith(key).build().parseSignedClaims(jwt);
+			System.out.println("jwt is valide");
 			return true;
 		} catch (MalformedJwtException e) {
+			System.out.println("jwt is not valide");
 			System.err.println(e.getMessage());
 		} catch (IllegalArgumentException e) {
+			System.out.println("jwt is not valide");
 			System.err.println(e.getMessage());
 		}
 

@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.project.auction.models.Lot;
 import com.project.auction.models.User;
-import com.project.auction.payload.request.CreateLotRequest;
+import com.project.auction.pojo.CreateLotRequest;
 import com.project.auction.pojo.MessageResponse;
 import com.project.auction.repository.UserRepository;
 import com.project.auction.service.LotService;
@@ -28,6 +28,7 @@ public class LotController {
 
     @PostMapping("/create")
     public ResponseEntity<?> createLot(@RequestBody CreateLotRequest request) {
+        System.out.println("start create lot");
         lotService.createLot(request);
         return ResponseEntity.ok(new MessageResponse("lot is created"));
     }

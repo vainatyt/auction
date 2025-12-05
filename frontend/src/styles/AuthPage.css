@@ -49,36 +49,11 @@
   background-color: #0056b3;
 }
 
-.auth-error {
-  color: #dc3545;
-  font-size: 0.9rem;
-  text-align: center;
-}
-
 .auth-footer {
   margin-top: 1rem;
   text-align: center;
-  font-size: 0.9rem;
+  font-size: 0.9rem;    
   color: #666;
-}
-
-.form-group {
-  display: flex;
-  align-items: center;
-  gap: 1rem; /* расстояние между label и input */
-  margin-bottom: 1rem;
-}
-
-.form-group label {
-  min-width: 80px; /* фиксированная ширина label */
-  font-weight: 500;
-  color: #333;
-  font-size: 0.95rem;
-}
-
-.form-group input {
-  flex: 1; /* занимает всё оставшееся место */
-  max-width: 300px; /* ограничение ширины */
 }
 
 .auth-button {
