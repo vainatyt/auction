@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'; // Можно заменить обыч
 
 import SigninPage from './auth/SigninPage';
 import ProfilePage from './ProfilePage';
+import CreateLotPage from './CreateLot';
 
 const MainPage = () => {
   const [page, setPage] = useState<'home' | 'profile' | 'create-lot' | 'signin'>('home');
@@ -12,7 +13,7 @@ const MainPage = () => {
       case 'profile':
         return <ProfilePage/>;
       case 'create-lot':
-        return <></>;
+        return <CreateLotPage/>;
       case 'signin':
         return <SigninPage />;
     }
