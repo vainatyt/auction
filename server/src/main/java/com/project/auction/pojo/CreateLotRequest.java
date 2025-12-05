@@ -11,7 +11,7 @@ public class CreateLotRequest {
     private String goodsDescription;
 
     // данные по лоту (Lots)
-    private BigDecimal startPrice;
+    private BigDecimal currentCost;
     private BigDecimal rateStep;
     private LocalDateTime startAuction;
     private LocalDateTime endAuction;
@@ -60,12 +60,12 @@ public class CreateLotRequest {
         this.rateStep = rateStep;
     }
 
-    public BigDecimal getStartPrice() {
-        return startPrice;
+    public BigDecimal getCurrentCost() {
+        return currentCost;
     }
 
-    public void setStartPrice(BigDecimal startPrice) {
-        this.startPrice = startPrice;
+    public void setCurrentCost(BigDecimal currentCost) {
+        this.currentCost = currentCost;
     }
 
 
