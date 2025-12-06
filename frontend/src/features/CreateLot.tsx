@@ -8,18 +8,21 @@ interface LotFormData {
   endAuction: string;
   currentCost: number;
   rateStep: number;
-  goodId: number;
+  goodsName: string;
+  goodsDescription: string;
 }
 
 const CreateLotPage: React.FC = () => {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
+
   const [formData, setFormData] = useState<LotFormData>({
     startAuction: '',
     endAuction: '',
     currentCost: 0,
     rateStep: 0,
-    goodId: 0,
+    goodsName: '',
+    goodsDescription: '',
   });
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [loading, setLoading] = useState(false);
@@ -33,6 +36,14 @@ const CreateLotPage: React.FC = () => {
 
   const validateForm = (): boolean => {
     const newErrors: { [key: string]: string } = {};
+
+    // Проверка обязательных полей
+    if (!formData.goodsName.trim()) {
+      newErrors.goodsName = 'Название товара обязательно';
+    }
+    if (!formData.goodsDescription.trim()) {
+      newErrors.goodsDescription = 'Описание товара обязательно';
+    }
 
     // Проверка дат
     const startDate = new Date(formData.startAuction);
@@ -54,11 +65,6 @@ const CreateLotPage: React.FC = () => {
       newErrors.rateStep = 'Шаг ставки должен быть больше 0';
     }
 
-    // Проверка ID товара
-    if (formData.goodId <= 0) {
-      newErrors.goodId = 'ID товара должен быть числом больше 0';
-    }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -71,11 +77,12 @@ const CreateLotPage: React.FC = () => {
     setLoading(true);
     try {
       const lotData = {
+        goodsName: formData.goodsName.trim(),
+        goodsDescription: formData.goodsDescription.trim(),
+        currentCost:formData.currentCost.toString(),
+        rateStep: formData.rateStep.toString(),
         startAuction: formData.startAuction,
         endAuction: formData.endAuction,
-        currentCost: formData.currentCost,
-        rateStep: formData.rateStep,
-        goodId: formData.goodId,
       };
 
       await CloseApi.post('/lots/create', lotData);
@@ -90,15 +97,26 @@ const CreateLotPage: React.FC = () => {
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
     
-    // Очистка ошибки при вводе
-    if (errors[name as keyof LotFormData]) {
-      setErrors(prev => ({ ...prev, [name]: '' }));
-    }
-  };
+    // Для number полей
+    const parsedValue = (name === 'currentCost' || name === 'rateStep')
+      ? (value === '' ? 0 : parseFloat(value) || 0)
+      : value;
+      
+    setFormData(prev => ({ 
+      ...prev, 
+      [name as keyof LotFormData]: parsedValue 
+    }));
+    
+    // Очистка ошибки
+    setErrors(prev => {
+      const newErrors = { ...prev };
+      delete newErrors[name];
+      return newErrors;
+    });
+};
 
   if (success) {
     return (
@@ -139,6 +157,53 @@ const CreateLotPage: React.FC = () => {
         </h1>
 
         <form onSubmit={handleSubmit}>
+          {/* Название товара */}
+          <div style={{ marginBottom: '1.5rem' }}>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#333' }}>
+              Название товара
+            </label>
+            <input
+              type="text"
+              name="goodsName"
+              value={formData.goodsName}
+              onChange={handleChange}
+              style={{
+                width: '100%', padding: '0.75rem',
+                border: errors.goodsName ? '2px solid #dc3545' : '1px solid #ddd',
+                borderRadius: '8px', fontSize: '1rem'
+              }}
+              placeholder="Введите название товара"
+            />
+            {errors.goodsName && (
+              <span style={{ color: '#dc3545', fontSize: '0.875rem', marginTop: '0.25rem', display: 'block' }}>
+                {errors.goodsName}
+              </span>
+            )}
+          </div>
+
+          {/* Описание товара */}
+          <div style={{ marginBottom: '1.5rem' }}>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#333' }}>
+              Описание товара
+            </label>
+            <textarea
+              name="goodsDescription"
+              rows={4}
+              value={formData.goodsDescription}
+              onChange={handleChange}
+              style={{
+                width: '100%', padding: '0.75rem',
+                border: errors.goodsDescription ? '2px solid #dc3545' : '1px solid #ddd',
+                borderRadius: '8px', fontSize: '1rem', resize: 'vertical'
+              }}
+              placeholder="Подробное описание товара"
+            />
+            {errors.goodsDescription && (
+              <span style={{ color: '#dc3545', fontSize: '0.875rem', marginTop: '0.25rem', display: 'block' }}>
+                {errors.goodsDescription}
+              </span>
+            )}
+          </div>
           {/* Начальная цена */}
           <div style={{ marginBottom: '1.5rem' }}>
             <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#333' }}>
@@ -244,34 +309,6 @@ const CreateLotPage: React.FC = () => {
               </span>
             )}
           </div>
-
-          {/* ID товара */}
-          <div style={{ marginBottom: '2rem' }}>
-            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#333' }}>
-              ID товара
-            </label>
-            <input
-              type="number"
-              name="goodId"
-              min="1"
-              value={formData.goodId}
-              onChange={handleChange}
-              style={{
-                width: '100%',
-                padding: '0.75rem',
-                border: errors.goodId ? '2px solid #dc3545' : '1px solid #ddd',
-                borderRadius: '8px',
-                fontSize: '1rem',
-              }}
-              placeholder="123"
-            />
-            {errors.goodId && (
-              <span style={{ color: '#dc3545', fontSize: '0.875rem', marginTop: '0.25rem', display: 'block' }}>
-                {errors.goodId}
-              </span>
-            )}
-          </div>
-
           {errors.submit && (
             <div style={{ 
               padding: '1rem', 
