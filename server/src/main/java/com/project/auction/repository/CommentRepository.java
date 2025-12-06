@@ -10,8 +10,8 @@ import org.springframework.data.repository.CrudRepository;
 public interface CommentRepository extends CrudRepository<Comment, Long>{
 
     // все комментарии о пользователе
-    List<Comment> findByAddressee(User addressee);
+    List<Comment> findByAddresseeId(User addressee);
 
     // все комментарии, написанные пользователем
-    List<Comment> findByCommentator(User commentator);
+    List<Comment> findByCommentatorId(User commentator);
 }

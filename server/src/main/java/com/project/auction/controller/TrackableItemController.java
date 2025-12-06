@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/track")
+@RequestMapping("/track")
 public class TrackableItemController {
 
     private final TrackableItemService trackableItemService;

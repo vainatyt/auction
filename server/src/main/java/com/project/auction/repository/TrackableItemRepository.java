@@ -2,19 +2,18 @@ package com.project.auction.repository;
 
 import org.springframework.data.repository.CrudRepository;
 import com.project.auction.models.TrackableItem;
-import com.project.auction.models.TrackableItemId;
 import com.project.auction.models.Lot;
 import com.project.auction.models.User;
 import java.util.List;
 import java.util.Optional;
 
-public interface TrackableItemRepository extends CrudRepository<TrackableItem, TrackableItemId> {
+public interface TrackableItemRepository extends CrudRepository<TrackableItem, Long> {
 
-    List<TrackableItem> findByUser(User user);
+    List<TrackableItem> findByUserId(User user);
 
-    List<TrackableItem> findByLot(Lot lot);
+    List<TrackableItem> findByLotId(Lot lot);
 
-    Optional<TrackableItem> findByUserAndLot(User user, Lot lot);
+    Optional<TrackableItem> findByUserIdAndLotId(User user, Lot lot);
 
-    void deleteByUserAndLot(User user, Lot lot);
+    void deleteByUserIdAndLotId(User user, Lot lot);
 }

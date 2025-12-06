@@ -2,6 +2,9 @@ package com.project.auction.models;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
+
+import com.project.auction.pojo.CreateLotRequest;
+
 import org.springframework.data.relational.core.mapping.Column;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -28,10 +31,18 @@ public class Lot {
     @Column("id_buyer")
     private Long buyerId;
 
-    @Column("id_good")
-    private Long goodId;
+    @Column("id_owner")
+    private Long ownerId;
 
-    public Lot() {
+    public Lot(){
+    }
+
+    public Lot(Long owId, CreateLotRequest lot) {
+        startAuction = lot.getStartAuction();
+        endAuction = lot.getEndAuction();
+        currentCost = lot.getCurrentCost();
+        rateStep = lot.getRateStep();
+        ownerId = owId;
     }
 
     // при желании можешь добавить конструктор со всеми полями
@@ -84,11 +95,11 @@ public class Lot {
         this.buyerId = buyerId;
     }
 
-    public Long getGoodId() {
-        return goodId;
+    public Long getOwnerId() {
+        return ownerId;
     }
 
-    public void setGoodId(Long goodId) {
-        this.goodId = goodId;
+    public void setGoodId(Long ownerId) {
+        this.ownerId = ownerId;
     }
 }

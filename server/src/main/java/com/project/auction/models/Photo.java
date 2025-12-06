@@ -2,10 +2,18 @@ package com.project.auction.models;
 
 import java.util.UUID;
 
-public class Photo {
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Column;
+import org.springframework.data.relational.core.mapping.Table;
 
-    private Long id;        // id в таблице, если есть автоинкремент PK
+@Table("photo")
+public class Photo {
+    @Id
+    @Column("id_photo")
+    private Long id;       // id в таблице, если есть автоинкремент PK
+    @Column("id_good")
     private Long goodId;    // колонка id_good
+    @Column("uuid")
     private UUID uuid;      // колонка uuid
 
     public Photo() {

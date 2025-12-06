@@ -29,7 +29,10 @@ public class LotController {
     @PostMapping("/create")
     public ResponseEntity<?> createLot(@RequestBody CreateLotRequest request) {
         System.out.println("start create lot");
-        lotService.createLot(request);
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String username = auth.getName();
+        Optional<User> user = userRepository.findByName(username);
+        lotService.createLot(user.get().getId(), request);
         return ResponseEntity.ok(new MessageResponse("lot is created"));
     }
 

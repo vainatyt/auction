@@ -30,7 +30,7 @@ public class TrackableItemService {
                 .orElseThrow(() -> new RuntimeException("Lot not found"));
 
         // не добавлять дубликаты
-        if (trackableItemRepository.findByUserAndLot(user, lot).isEmpty()) {
+        if (trackableItemRepository.findByUserIdAndLotId(user, lot).isEmpty()) {
             TrackableItem item = new TrackableItem(lot.getId(), user.getId());
             trackableItemRepository.save(item);
         }
@@ -43,12 +43,12 @@ public class TrackableItemService {
         Lot lot = lotRepository.findById(lotId)
                 .orElseThrow(() -> new RuntimeException("Lot not found"));
 
-        trackableItemRepository.deleteByUserAndLot(user, lot);
+        trackableItemRepository.deleteByUserIdAndLotId(user, lot);
     }
 
     public List<TrackableItem> getTrackedLots(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        return trackableItemRepository.findByUser(user);
+        return trackableItemRepository.findByUserId(user);
     }
 }

@@ -4,9 +4,11 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.springframework.web.multipart.MultipartFile;
+
 public class CreateLotRequest {
 
-    // данные по товару (Goods)
+    // данные по товару (metadata)
     private String goodsName;
     private String goodsDescription;
 
@@ -16,23 +18,13 @@ public class CreateLotRequest {
     private LocalDateTime startAuction;
     private LocalDateTime endAuction;
 
-    // список UUID фотографий (photo.uuid) в виде строк
-    private List<String> photoUuids;
+    // список фотографий
+    private List<MultipartFile> photoUuids;
 
+    
     public CreateLotRequest() {
     }
-
-    // ----- goods -----
-
-    private Long goodId;
     
-    public Long getGoodId() {
-        return goodId;
-    }
-
-    public void setGoodId(Long goodId) {
-        this.goodId = goodId;
-    }
 
     public String getGoodsName() {
         return goodsName;
@@ -87,11 +79,11 @@ public class CreateLotRequest {
 
     // ----- photos -----
 
-    public List<String> getPhotoUuids() {
+    public List<MultipartFile> getPhotoUuids() {
         return photoUuids;
     }
 
-    public void setPhotoUuids(List<String> photoUuids) {
+    public void setPhotoUuids(List<MultipartFile> photoUuids) {
         this.photoUuids = photoUuids;
     }
 }

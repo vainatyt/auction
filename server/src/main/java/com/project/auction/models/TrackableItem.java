@@ -1,9 +1,15 @@
 package com.project.auction.models;
 
+import org.springframework.data.relational.core.mapping.Column;
+import org.springframework.data.relational.core.mapping.Table;
+
+@Table("trakable_items")
 public class TrackableItem {
 
-    private Long lotId;   // id_lot
-    private Long userId;  // id_user
+    @Column("id_lot")
+    private Long lotId;
+    @Column("id_user")
+    private Long userId;
 
     public TrackableItem() {
     }

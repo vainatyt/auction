@@ -1,16 +1,22 @@
 package com.project.auction.models;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
 @Table(name = "users")
 public class User{
 
     @Id
+    @Column("id_user")
     private Long id;
+    @Column("name")
     private String name;
+    @Column("password")
     private String password;
+    @Column("email")
     private String email;
+    @Column("rating")
     private double rating;
     
     public User(){    

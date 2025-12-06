@@ -2,34 +2,33 @@ package com.project.auction.models;
 
 import java.time.LocalDateTime;
 
+import org.springframework.data.relational.core.mapping.Column;
+import org.springframework.data.relational.core.mapping.Table;
+
+@Table(name = "comments")
 public class Comment {
 
-    private Long id;
+    @Column("id_commentator")
     private Long commentatorId; // id_commentator
+    @Column("id_addressee")
     private Long addresseeId;   // id_addressee
+    @Column("rating")
     private Integer rating;
+    @Column("review")
     private String review;
+    @Column("data")
     private LocalDateTime date;
 
     public Comment() {
     }
 
-    public Comment(Long id, Long commentatorId, Long addresseeId,
+    public Comment(Long commentatorId, Long addresseeId,
                    Integer rating, String review, LocalDateTime date) {
-        this.id = id;
         this.commentatorId = commentatorId;
         this.addresseeId = addresseeId;
         this.rating = rating;
         this.review = review;
         this.date = date;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
     }
 
     public Long getCommentatorId() {
