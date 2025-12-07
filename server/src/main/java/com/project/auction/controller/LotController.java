@@ -1,18 +1,25 @@
 package com.project.auction.controller;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import com.project.auction.models.Lot;
+import com.project.auction.models.MetaDataLot;
 import com.project.auction.models.User;
 import com.project.auction.pojo.CreateLotRequest;
+import com.project.auction.pojo.LotResponse;
 import com.project.auction.pojo.MessageResponse;
+import com.project.auction.repository.MetaDataLotRepository;
 import com.project.auction.repository.UserRepository;
 import com.project.auction.service.LotService;
 
@@ -42,7 +49,7 @@ public class LotController {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String username = auth.getName();
         Optional<User> user = userRepository.findByName(username);
-        Page<Lot> my_lots_page = lotService.getUserLots(user.get().getId(), page, size);
+        Page<LotResponse> my_lots_page = lotService.findUserLotsWithMetadata(user.get().getId(),PageRequest.of(page, size));
         return ResponseEntity.ok(my_lots_page);
     }
 

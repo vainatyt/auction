@@ -1,14 +1,18 @@
 package com.project.auction.models;
 
-import org.springframework.data.relational.core.mapping.Column;
-import org.springframework.data.relational.core.mapping.Table;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
-@Table("trakable_items")
+@Entity
+@Table(name = "trakable_items")
 public class TrackableItem {
-
-    @Column("id_lot")
+    @Id
+    private Long id;
+    @Column(name = "id_lot")
     private Long lotId;
-    @Column("id_user")
+    @Column(name = "id_user")
     private Long userId;
 
     public TrackableItem() {
@@ -17,6 +21,14 @@ public class TrackableItem {
     public TrackableItem(Long lotId, Long userId) {
         this.lotId = lotId;
         this.userId = userId;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public Long getLotId() {

@@ -1,16 +1,21 @@
 package com.project.auction.models;
 
-import org.springframework.data.relational.core.mapping.Column;
-import org.springframework.data.relational.core.mapping.Table;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
-@Table("metadata_lot")
+@Entity
+@Table(name = "metadata_lot")
 public class MetaDataLot {
-
-    @Column("id_lot")
+    @Id
+    @Column(name = "id")
+    private Long id;
+    @Column(name = "id_lot")
     private Long lotId;
-    @Column("name")
+    @Column(name = "name")
     private String name;
-    @Column("description")
+    @Column(name = "description")
     private String description;
 
     public MetaDataLot() {
@@ -20,6 +25,14 @@ public class MetaDataLot {
         this.lotId = lotId;
         this.name = name;
         this.description = description;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public Long getLotId() {

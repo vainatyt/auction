@@ -2,26 +2,28 @@ package com.project.auction.models;
 
 import java.util.UUID;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.relational.core.mapping.Column;
-import org.springframework.data.relational.core.mapping.Table;
 
-@Table("photo")
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+
+@Entity
+@Table(name = "photo")
 public class Photo {
     @Id
-    @Column("id_photo")
-    private Long id;       // id в таблице, если есть автоинкремент PK
-    @Column("id_good")
-    private Long goodId;    // колонка id_good
-    @Column("uuid")
+    @Column(name = "id")
+    private Long id;
+    @Column(name = "id_lot")
+    private Long lotId;    // колонка id_good
+    @Column(name = "uuid")
     private UUID uuid;      // колонка uuid
 
     public Photo() {
     }
 
-    public Photo(Long id, Long goodId, UUID uuid) {
-        this.id = id;
-        this.goodId = goodId;
+    public Photo(Long lotId, UUID uuid) {
+        this.lotId = lotId;
         this.uuid = uuid;
     }
 
@@ -33,12 +35,12 @@ public class Photo {
         this.id = id;
     }
 
-    public Long getGoodId() {
-        return goodId;
+    public Long getLotId() {
+        return lotId;
     }
 
-    public void setGoodId(Long goodId) {
-        this.goodId = goodId;
+    public void setLotId(Long lotId) {
+        this.lotId = lotId;
     }
 
     public UUID getUuid() {

@@ -1,37 +1,43 @@
 package com.project.auction.models;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.relational.core.mapping.Table;
 
 import com.project.auction.pojo.CreateLotRequest;
 
-import org.springframework.data.relational.core.mapping.Column;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+@Entity
 @Table(name = "lots")
 public class Lot {
 
     @Id
-    @Column("id_lot")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_lot")
     private Long id;
 
-    @Column("start_auction")
+    @Column(name = "start_auction")
     private LocalDateTime startAuction;
 
-    @Column("end_auction")
+    @Column(name = "end_auction")
     private LocalDateTime endAuction;
 
-    @Column("current_cost")
+    @Column(name = "current_cost")
     private BigDecimal currentCost;
 
-    @Column("rate_step")
+    @Column(name = "rate_step")
     private BigDecimal rateStep;
 
-    @Column("id_buyer")
+    @Column(name = "id_buyer")
     private Long buyerId;
 
-    @Column("id_owner")
+    @Column(name = "id_owner")
     private Long ownerId;
 
     public Lot(){
@@ -99,7 +105,7 @@ public class Lot {
         return ownerId;
     }
 
-    public void setGoodId(Long ownerId) {
+    public void setOwnerId(Long ownerId) {
         this.ownerId = ownerId;
     }
 }

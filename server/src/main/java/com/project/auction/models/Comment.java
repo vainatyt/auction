@@ -2,49 +2,49 @@ package com.project.auction.models;
 
 import java.time.LocalDateTime;
 
-import org.springframework.data.relational.core.mapping.Column;
-import org.springframework.data.relational.core.mapping.Table;
+import jakarta.persistence.Column;
+import jakarta.persistence.EmbeddedId;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 
+@Entity
 @Table(name = "comments")
 public class Comment {
 
-    @Column("id_commentator")
-    private Long commentatorId; // id_commentator
-    @Column("id_addressee")
-    private Long addresseeId;   // id_addressee
-    @Column("rating")
+    @EmbeddedId
+    private CommentId id;
+    @Column(name = "rating")
     private Integer rating;
-    @Column("review")
+    @Column(name = "review")
     private String review;
-    @Column("data")
+    @Column(name = "data")
     private LocalDateTime date;
 
     public Comment() {
     }
 
-    public Comment(Long commentatorId, Long addresseeId,
+    public Comment(CommentId id,
                    Integer rating, String review, LocalDateTime date) {
-        this.commentatorId = commentatorId;
-        this.addresseeId = addresseeId;
+        this.id = id;
         this.rating = rating;
         this.review = review;
         this.date = date;
     }
 
+    public CommentId getId() {
+        return id;
+    }
+
+    public void setId(CommentId id) {
+        this.id = id;
+    }
+
     public Long getCommentatorId() {
-        return commentatorId;
+        return id.getCommentatorId();
     }
-
-    public void setCommentatorId(Long commentatorId) {
-        this.commentatorId = commentatorId;
-    }
-
+    
     public Long getAddresseeId() {
-        return addresseeId;
-    }
-
-    public void setAddresseeId(Long addresseeId) {
-        this.addresseeId = addresseeId;
+        return id.getAddresseeId();
     }
 
     public Integer getRating() {
