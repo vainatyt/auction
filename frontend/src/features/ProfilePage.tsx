@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';  // ✅ useCallback!
+import React, { useState, useEffect, useCallback } from 'react';  // ✅ useCallback!
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import CloseApi from '../api/CloseApi';
@@ -17,7 +17,9 @@ interface Lot {
   currentCost: number;
   rateStep: number;
   buyerId: number;
-  goodId: number;
+  ownerId: number;
+  name: string;
+  description: string;
 }
 
 interface Page<T> {
@@ -42,21 +44,16 @@ const ProfilePage: React.FC = () => {
   const [page, setPage] = useState(0);
 
   // ✅ Правильный loadLots с useCallback
-  const loadLots = async (pageNum = 0) => {
-    if (!user?.id) {
-      console.log('Нет user.id');
-      return;
-    }
+  const loadLots = useCallback(async (pageNum: number = 0) => {
     try {
-      console.log(`Загрузка лотов user ${user.id}, page ${pageNum}`);
-      const response = await CloseApi.get<Page<Lot>>(`/lots/getmy/?page=${pageNum}&size=10`);
-      console.log('Лоты:', response.data);
+      const response = await CloseApi.get<Page<Lot>>(`/lots/getmy?page=${pageNum}&size=10`);
+      console.log('Лоты:', response.data);  // ✅ Лог ответа API
       setLots(response.data);
       setPage(pageNum);
     } catch (error) {
-      console.error('Лоты ошибка:', error);
+      console.error('Лоты ошибка:', error);  // ✅ Лог ошибки
     }
-  };
+  }, [user?.id]);
 
   // ✅ Загрузка пользователя
   useEffect(() => {
@@ -87,10 +84,8 @@ const ProfilePage: React.FC = () => {
 
   //Загрузка лотов после получения user
   useEffect(() => {
-    if (user?.id) {
-      loadLots(0);
-    }
-  }, [user?.id, loadLots]);
+    loadLots(0);
+  }, [user?.id]);
 
   if (loading) {
     return <div style={{ padding: '2rem', textAlign: 'center', color: '#666' }}>Загрузка профиля...</div>;
@@ -172,6 +167,12 @@ const ProfilePage: React.FC = () => {
                       }}
                     >
                       <div>
+                        <strong>Наименовани:</strong> {lot.name}
+                      </div>
+                      <div>
+                        <strong>Описание:</strong> {lot.description}
+                      </div>
+                      <div>
                         <strong>Старт:</strong> {new Date(lot.startAuction).toLocaleString('ru-RU')}
                       </div>
                       <div>
@@ -181,7 +182,7 @@ const ProfilePage: React.FC = () => {
                         <strong>Шаг ставки:</strong> {lot.rateStep} ₽
                       </div>
                       <div>
-                        <strong>Товар ID:</strong> {lot.goodId}
+                        <strong>Покупатель ID:</strong> {lot.buyerId}
                       </div>
                     </div>
                   </div>
