@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'; // Можно заменить обыч
 import SigninPage from './auth/SigninPage';
 import ProfilePage from './ProfilePage';
 import CreateLotPage from './CreateLot';
+import LotsPage from './LotsPage';
 
 const MainPage = () => {
   const [page, setPage] = useState<'home' | 'profile' | 'create-lot' | 'signin'>('home');
@@ -16,12 +17,15 @@ const MainPage = () => {
         return <CreateLotPage/>;
       case 'signin':
         return <SigninPage />;
+      case 'home':
+        return <LotsPage/>;
     }
   };
 
   return (
     <>
       <header style={{ padding: '1rem', background: '#eee', display: 'flex', gap: '1rem' }}>
+        <button onClick={() => setPage('home')}>Главная</button>
         <button onClick={() => setPage('profile')}>Профиль</button>
         <button onClick={() => setPage('create-lot')}>Создать лот</button>
       </header>
