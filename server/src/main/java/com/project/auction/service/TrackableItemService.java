@@ -1,7 +1,11 @@
 package com.project.auction.service;
 
 import com.project.auction.models.*;
+import com.project.auction.pojo.LotResponse;
 import com.project.auction.repository.*;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -46,9 +50,7 @@ public class TrackableItemService {
         trackableItemRepository.deleteByUserIdAndLotId(user, lot);
     }
 
-    public List<TrackableItem> getTrackedLots(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        return trackableItemRepository.findByUserId(user);
+    public Page<LotResponse> getTrackedLots(Long userId, Pageable pageable) {
+        return trackableItemRepository.findLotAndMetadataByUserId(userId,pageable);
     }
 }

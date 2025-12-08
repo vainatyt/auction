@@ -9,6 +9,7 @@ import com.project.auction.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 @Service
@@ -29,7 +30,7 @@ public class CommentService {
         comment.setId(new CommentId(commentatorId,request.getAddresseeId()));
         comment.setRating(request.getRating());
         comment.setReview(request.getReview());
-        comment.setDate(LocalDateTime.now());
+        comment.setDate(Instant.now());
 
         return commentRepository.save(comment);
     }
