@@ -9,6 +9,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.List;
 
 @Service
@@ -50,7 +52,13 @@ public class TrackableItemService {
         trackableItemRepository.deleteByUserIdAndLotId(userId, lotId);
     }
 
+    @Transactional
     public Page<LotResponse> getTrackedLots(Long userId, Pageable pageable) {
-        return trackableItemRepository.findLotAndMetadataByUserId(userId,pageable);
+        Page<Object[]> rawPage = trackableItemRepository.findTrackedLotsByUserId(userId, pageable);
+        Page<LotResponse> result = rawPage.map(row -> new LotResponse(
+            (String)row[0], (String)row[1], (BigDecimal)row[2],
+            (BigDecimal)row[3], (Instant)row[4], (Instant)row[5], ((Number)row[6]).longValue()));
+        return result;
     }
+
 }
