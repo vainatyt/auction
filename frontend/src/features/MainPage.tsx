@@ -5,9 +5,10 @@ import SigninPage from './auth/SigninPage';
 import ProfilePage from './ProfilePage';
 import CreateLotPage from './CreateLot';
 import LotsPage from './LotsPage';
+import TrackedLotsPage from './TrackedLotsPage';
 
 const MainPage = () => {
-  const [page, setPage] = useState<'home' | 'profile' | 'create-lot' | 'signin'>('home');
+  const [page, setPage] = useState<'track' | 'home' | 'profile' | 'create-lot' | 'signin'>('home');
 
   const renderPage = () => {
     switch (page) {
@@ -19,6 +20,8 @@ const MainPage = () => {
         return <SigninPage />;
       case 'home':
         return <LotsPage/>;
+      case 'track':
+        return <TrackedLotsPage/>;
     }
   };
 
@@ -28,6 +31,7 @@ const MainPage = () => {
         <button onClick={() => setPage('home')}>Главная</button>
         <button onClick={() => setPage('profile')}>Профиль</button>
         <button onClick={() => setPage('create-lot')}>Создать лот</button>
+        <button onClick={() => setPage('track')}>Отслеживаемые лоты</button>
       </header>
 
       <main style={{ padding: '1rem' }}>

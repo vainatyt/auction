@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';  // ✅ useCall
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import CloseApi from '../api/CloseApi';
+import RenderLot from '../components/LotRender';
 
 interface UserData {
   id: number;
@@ -82,6 +83,14 @@ const ProfilePage: React.FC = () => {
     fetchUserData();
   }, [isAuthenticated, navigate]);
 
+  const handleUnpin = async (lotId: number) => {
+    try {
+      await CloseApi.delete(`/track/remove/${lotId}`);
+    } catch (error) {
+      console.error('Ошибка удаления:', error);
+    }
+  };
+
   //Загрузка лотов после получения user
   useEffect(() => {
     loadLots(0);
@@ -129,64 +138,12 @@ const ProfilePage: React.FC = () => {
             <>
               <div style={{ display: 'grid', gap: '1.5rem', marginBottom: '2rem' }}>
                 {lots.content.map((lot) => (
-                  <div
-                    key={lot.id}
-                    style={{
-                      padding: '1.5rem',
-                      border: '1px solid #e0e0e0',
-                      borderRadius: '12px',
-                      background: 'white',
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                    }}
-                  >
-                    <div
-                      style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        marginBottom: '1rem',
-                      }}
-                    >
-                      <h3 style={{ margin: 0, color: '#2c3e50' }}>Лот #{lot.id}</h3>
-                      <span
-                        style={{
-                          fontSize: '1.4em',
-                          fontWeight: 'bold',
-                          color: '#27ae60',
-                        }}
-                      >
-                        {lot.currentCost} ₽
-                      </span>
-                    </div>
-                    <div
-                      style={{
-                        display: 'grid',
-                        gridTemplateColumns: '1fr 1fr',
-                        gap: '1rem',
-                        fontSize: '0.95em',
-                      }}
-                    >
-                      <div>
-                        <strong>Наименовани:</strong> {lot.name}
-                      </div>
-                      <div>
-                        <strong>Описание:</strong> {lot.description}
-                      </div>
-                      <div>
-                        <strong>Старт:</strong> {new Date(lot.startAuction).toLocaleString('ru-RU')}
-                      </div>
-                      <div>
-                        <strong>Конец:</strong> {new Date(lot.endAuction).toLocaleString('ru-RU')}
-                      </div>
-                      <div>
-                        <strong>Шаг ставки:</strong> {lot.rateStep} ₽
-                      </div>
-                      <div>
-                        <strong>Покупатель ID:</strong> {lot.buyerId}
-                      </div>
-                    </div>
-                  </div>
-                ))}
+                        <RenderLot 
+                        key={lot.id}
+                        lot={lot}
+                        onUnpin={handleUnpin} 
+                        />
+                      ))}
               </div>
 
               <div
