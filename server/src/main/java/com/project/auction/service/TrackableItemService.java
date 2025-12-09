@@ -34,7 +34,7 @@ public class TrackableItemService {
                 .orElseThrow(() -> new RuntimeException("Lot not found"));
 
         // не добавлять дубликаты
-        if (trackableItemRepository.findByUserIdAndLotId(user, lot).isEmpty()) {
+        if (trackableItemRepository.findByUserIdAndLotId(userId, lotId).isEmpty()) {
             TrackableItem item = new TrackableItem(lot.getId(), user.getId());
             trackableItemRepository.save(item);
         }
@@ -47,7 +47,7 @@ public class TrackableItemService {
         Lot lot = lotRepository.findById(lotId)
                 .orElseThrow(() -> new RuntimeException("Lot not found"));
 
-        trackableItemRepository.deleteByUserIdAndLotId(user, lot);
+        trackableItemRepository.deleteByUserIdAndLotId(userId, lotId);
     }
 
     public Page<LotResponse> getTrackedLots(Long userId, Pageable pageable) {

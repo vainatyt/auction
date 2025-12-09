@@ -4,6 +4,7 @@ import SignupPage from './features/auth/SignupPage';
 import MainPage from './features/MainPage';
 import { AuthProvider } from './context/AuthContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import LotDetailPage from './features/LotDetailPage';
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
               </ProtectedRoute>
             } 
           />
+          <Route path="/lot/:lotId" element={<LotDetailPage />} />
         </Routes>
       </AuthProvider>
     </Router>

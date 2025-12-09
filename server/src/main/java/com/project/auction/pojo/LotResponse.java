@@ -3,6 +3,9 @@ package com.project.auction.pojo;
 import java.math.BigDecimal;
 import java.time.Instant;
 
+import com.project.auction.models.Lot;
+import com.project.auction.models.MetaDataLot;
+
 public class LotResponse {
 
     private Long id;
@@ -17,6 +20,16 @@ public class LotResponse {
     private Instant endAuction;
     
     public LotResponse() {
+    }
+
+    public LotResponse(Lot lot, MetaDataLot meta){
+        this.id = lot.getId();
+        this.name = meta.getName();
+        this.description = meta.getDescription();
+        this.currentCost = lot.getCurrentCost();
+        this.rateStep = lot.getRateStep();
+        this.startAuction = lot.getStartAuction();
+        this.endAuction = lot.getEndAuction();
     }
 
     public LotResponse(String name, String discription, BigDecimal currentCost,

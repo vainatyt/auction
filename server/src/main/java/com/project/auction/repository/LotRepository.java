@@ -45,7 +45,8 @@ public interface LotRepository extends JpaRepository<Lot, Long> {
        "WHERE l.id_lot = :id",
        countQuery = "SELECT COUNT(*) FROM lots l LEFT JOIN metadata_lot m ON l.id_lot = m.id_lot WHERE l.id_lot = :id",
        nativeQuery = true)
-    LotResponse findLotWithMetadata(
+    Object[] findLotWithMetadata(
         @Param("id") Long id
     );
+
 }

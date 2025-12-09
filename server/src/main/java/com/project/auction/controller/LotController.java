@@ -10,12 +10,15 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import com.project.auction.models.Lot;
 import com.project.auction.models.User;
+import com.project.auction.pojo.BuyLotRequest;
 import com.project.auction.pojo.CreateLotRequest;
 import com.project.auction.pojo.LotResponse;
 import com.project.auction.pojo.MessageResponse;
 import com.project.auction.repository.UserRepository;
 import com.project.auction.service.LotService;
+import com.project.auction.service.TrackableItemService;
 
 @RestController
 @RequestMapping("/lots")
@@ -26,6 +29,9 @@ public class LotController {
 
     @Autowired
     private LotService lotService;
+
+    @Autowired
+    private TrackableItemService trackableItemService;
 
     @PostMapping("/create")
     public ResponseEntity<?> createLot(@RequestBody CreateLotRequest request) {
@@ -53,5 +59,22 @@ public class LotController {
         Page<LotResponse> lots_page = lotService.findLotsWithMetadata(PageRequest.of(page, size));
         return ResponseEntity.ok(lots_page);
     }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getLot(@PathVariable Long id) {
+        System.out.println("get lot");
+        LotResponse lot = lotService.findLotWithMetadataById(id);
+        return ResponseEntity.ok(lot);
+    }
+
+    @PostMapping("/buy")
+    public ResponseEntity<?> buyLot(BuyLotRequest buyLotRequest){
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String username = auth.getName();
+        Optional<User> user = userRepository.findByName(username);
+        lotService.buyLot(user.get().getId(), buyLotRequest);
+        return ResponseEntity.ok("user buy lot "+buyLotRequest.getLotId());
+    }
+
 
 }

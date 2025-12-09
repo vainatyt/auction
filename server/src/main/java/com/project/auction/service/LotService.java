@@ -82,7 +82,9 @@ public class LotService {
 
     @Transactional
     public LotResponse findLotWithMetadataById(Long id){
-        return lotRepository.findLotWithMetadata(id);
+        Optional<Lot> lot = lotRepository.findById(id);
+        Optional<MetaDataLot> meta = metaDataLotRepository.findByLotId(id);
+        return new LotResponse(lot.get(), meta.get());
     }
 
     @Transactional

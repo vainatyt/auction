@@ -3,6 +3,7 @@ package com.project.auction.repository;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -20,9 +21,12 @@ public interface TrackableItemRepository extends JpaRepository<TrackableItem, Lo
 
     List<TrackableItem> findByLotId(Lot lot);
 
-    Optional<TrackableItem> findByUserIdAndLotId(User user, Lot lot);
+    @Query("SELECT t FROM TrackableItem t WHERE t.id.userId = :userId AND t.id.lotId = :lotId")
+    Optional<TrackableItem> findByUserIdAndLotId(@Param("userId") Long userId, @Param("lotId") Long lotId);
 
-    void deleteByUserIdAndLotId(User user, Lot lot);
+    @Modifying
+    @Query("DELETE FROM TrackableItem t WHERE t.id.userId = :userId AND t.id.lotId = :lotId")
+    void deleteByUserIdAndLotId(@Param("userId") Long userId, @Param("lotId") Long lotId);
 
     @Query(value = "SELECT m.name, m.description, l.current_cost, l.rate_step, " +
        "l.start_auction, l.end_auction, l.id_lot " +

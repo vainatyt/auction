@@ -1,49 +1,41 @@
 package com.project.auction.models;
 
+import org.springframework.data.web.config.EnableSpringDataWebSupport;
+
 import jakarta.persistence.Column;
+import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "trakable_items")
+@Table(name = "trackable_items")
 public class TrackableItem {
-    @Id
-    private Long id;
-    @Column(name = "id_lot")
-    private Long lotId;
-    @Column(name = "id_user")
-    private Long userId;
+    @EmbeddedId
+    private TrackableItemId id = new TrackableItemId();
 
     public TrackableItem() {
     }
 
     public TrackableItem(Long lotId, Long userId) {
-        this.lotId = lotId;
-        this.userId = userId;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
+        this.id = new TrackableItemId(); 
+        id.setLotId(lotId);
+        id.setUserId(userId);
     }
 
     public Long getLotId() {
-        return lotId;
+        return id.getLotId();
     }
 
     public void setLotId(Long lotId) {
-        this.lotId = lotId;
+        id.setLotId(lotId);
     }
 
     public Long getUserId() {
-        return userId;
+        return id.getUserId();
     }
 
     public void setUserId(Long userId) {
-        this.userId = userId;
+        id.setUserId(userId);
     }
 }
