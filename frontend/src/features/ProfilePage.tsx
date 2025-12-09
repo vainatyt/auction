@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import CloseApi from '../api/CloseApi';
 import RenderLot from '../components/LotRender';
+import Pagination from '../components/Pagination';
 
 interface UserData {
   id: number;
@@ -32,6 +33,7 @@ interface Page<T> {
 
 const ProfilePage: React.FC = () => {
   const { isAuthenticated } = useAuth();
+  const [currentPage, setCurrentPage] = useState(0);
   const navigate = useNavigate();
   const [user, setUser] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -46,6 +48,7 @@ const ProfilePage: React.FC = () => {
 
   // ✅ Правильный loadLots с useCallback
   const loadLots = useCallback(async (pageNum: number = 0) => {
+    setCurrentPage(page);
     try {
       const response = await CloseApi.get<Page<Lot>>(`/lots/getmy?page=${pageNum}&size=10`);
       console.log('Лоты:', response.data);  // ✅ Лог ответа API
@@ -82,14 +85,6 @@ const ProfilePage: React.FC = () => {
 
     fetchUserData();
   }, [isAuthenticated, navigate]);
-
-  const handleUnpin = async (lotId: number) => {
-    try {
-      await CloseApi.delete(`/track/remove/${lotId}`);
-    } catch (error) {
-      console.error('Ошибка удаления:', error);
-    }
-  };
 
   //Загрузка лотов после получения user
   useEffect(() => {
@@ -140,52 +135,18 @@ const ProfilePage: React.FC = () => {
                 {lots.content.map((lot) => (
                         <RenderLot 
                         key={lot.id}
-                        lot={lot}
-                        onUnpin={handleUnpin} 
+                        lot={lot} 
                         />
                       ))}
               </div>
-
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'center',
-                  gap: '0.5rem',
-                  padding: '1.5rem',
-                  background: '#f8f9fa',
-                  borderRadius: '12px',
-                }}
-              >
-                <button
-                  onClick={() => loadLots(page - 1)}
-                  disabled={page === 0}
-                  style={{
-                    padding: '0.75rem 1.5rem',
-                    border: '1px solid #ddd',
-                    background: page === 0 ? '#f5f5f5' : 'white',
-                    borderRadius: '8px',
-                    cursor: page === 0 ? 'not-allowed' : 'pointer',
-                  }}
-                >
-                  ← Предыдущая
-                </button>
-                <span style={{ padding: '0.75rem 1rem', fontWeight: '500' }}>
-                  Страница {page + 1} из {lots.totalPages || 1}
-                </span>
-                <button
-                  onClick={() => loadLots(page + 1)}
-                  disabled={!lots.hasNext}
-                  style={{
-                    padding: '0.75rem 1.5rem',
-                    border: '1px solid #ddd',
-                    background: !lots.hasNext ? '#f5f5f5' : 'white',
-                    borderRadius: '8px',
-                    cursor: !lots.hasNext ? 'not-allowed' : 'pointer',
-                  }}
-                >
-                  Следующая →
-                </button>
-              </div>
+              <Pagination
+                currentPage={currentPage}
+                totalPages={lots.totalPages}
+                totalElements={lots.totalElements}
+                pageSize={9}
+                lotsPage={lots}
+                onPageChange={loadLots}
+                />
             </>
           ) : (
             <div
