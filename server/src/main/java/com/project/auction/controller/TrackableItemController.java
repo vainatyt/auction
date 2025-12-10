@@ -56,4 +56,13 @@ public class TrackableItemController {
         return ResponseEntity.ok(trackableItemService.getTrackedLots(user.get().getId(), PageRequest.of(page, size)));
     }
 
+    @GetMapping("/tracked/{lotId}")
+    public ResponseEntity<?> isTracked(@PathVariable("lotId") Long lotId){
+        System.out.println("start isTrack Controller");
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String username = auth.getName();
+        Optional<User> user = userRepository.findByName(username); 
+        return ResponseEntity.ok(trackableItemService.isTracked(user.get().getId(), lotId));
+    }
+
 }

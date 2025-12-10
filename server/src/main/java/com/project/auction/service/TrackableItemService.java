@@ -61,4 +61,9 @@ public class TrackableItemService {
         return result;
     }
 
+    public boolean isTracked(Long userId, Long lotId){
+        System.out.println("start isTrack service");
+        return trackableItemRepository.findByUserIdAndLotId(userId, lotId).isPresent(); 
+    }
+
 }

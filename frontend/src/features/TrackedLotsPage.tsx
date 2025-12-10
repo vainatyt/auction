@@ -84,7 +84,6 @@ const TrackedLotsPage: React.FC = () => {
                         <RenderLot 
                         key={lot.id}
                         lot={lot} 
-                        onUnpin={handleUnpin}  // Показывает кнопку "Удалить"
                         />
                     ))}
                     </div>

@@ -73,7 +73,6 @@ const LotsPage: React.FC = () => {
           <RenderLot 
             key={lot.id}
             lot={lot}
-            onUnpin={handleUnpin}
             />
         ))}
       </div>
