@@ -4,6 +4,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -11,7 +12,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import com.project.auction.models.Lot;
-import com.project.auction.pojo.LotResponse;
 
 @Repository
 public interface LotRepository extends JpaRepository<Lot, Long> {
@@ -48,5 +48,9 @@ public interface LotRepository extends JpaRepository<Lot, Long> {
     Object[] findLotWithMetadata(
         @Param("id") Long id
     );
+
+    @Query("SELECT l FROM Lot l WHERE l.endAuction < :now")
+        List<Lot> findExpiredLots(LocalDateTime now);
+
 
 }

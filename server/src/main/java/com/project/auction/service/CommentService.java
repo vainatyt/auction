@@ -2,14 +2,12 @@ package com.project.auction.service;
 
 import com.project.auction.models.Comment;
 import com.project.auction.models.CommentId;
-import com.project.auction.models.User;
 import com.project.auction.pojo.CreateCommentRequest;
 import com.project.auction.repository.CommentRepository;
 import com.project.auction.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
 
 @Service
@@ -30,7 +28,7 @@ public class CommentService {
         comment.setId(new CommentId(commentatorId,request.getAddresseeId()));
         comment.setRating(request.getRating());
         comment.setReview(request.getReview());
-        comment.setDate(Instant.now());
+        comment.setDate(LocalDateTime.now());
 
         return commentRepository.save(comment);
     }

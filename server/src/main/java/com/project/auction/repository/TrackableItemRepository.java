@@ -6,15 +6,15 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import com.project.auction.models.TrackableItem;
 import com.project.auction.models.Lot;
-import com.project.auction.models.User;
-import com.project.auction.pojo.LotResponse;
 
 import java.util.List;
 import java.util.Optional;
 
+@Repository
 public interface TrackableItemRepository extends JpaRepository<TrackableItem, Long> {
 
     List<TrackableItem> findByUserId(Long id);
@@ -43,5 +43,5 @@ public interface TrackableItemRepository extends JpaRepository<TrackableItem, Lo
         @Param("userId") Long userId,
         Pageable pageable
     );
-
+    void deleteById_LotId(Long lotId);
 }

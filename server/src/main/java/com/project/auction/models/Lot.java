@@ -11,7 +11,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 import java.math.BigDecimal;
-import java.time.Instant;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "lots")
@@ -23,10 +23,10 @@ public class Lot {
     private Long id;
 
     @Column(name = "start_auction")
-    private Instant startAuction;
+    private LocalDateTime startAuction;
 
     @Column(name = "end_auction")
-    private Instant endAuction;
+    private LocalDateTime endAuction;
 
     @Column(name = "current_cost")
     private BigDecimal currentCost;
@@ -61,19 +61,19 @@ public class Lot {
         this.id = id;
     }
 
-    public Instant getStartAuction() {
+    public LocalDateTime getStartAuction() {
         return startAuction;
     }
 
-    public void setStartAuction(Instant startAuction) {
+    public void setStartAuction(LocalDateTime startAuction) {
         this.startAuction = startAuction;
     }
 
-    public Instant getEndAuction() {
+    public LocalDateTime getEndAuction() {
         return endAuction;
     }
 
-    public void setEndAuction(Instant endAuction) {
+    public void setEndAuction(LocalDateTime endAuction) {
         this.endAuction = endAuction;
     }
 
