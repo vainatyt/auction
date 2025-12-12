@@ -67,7 +67,7 @@ public class LotService {
         Page<Object[]> rawPage = lotRepository.findUserLotsWithMetadata(ownerId, pageable);
         Page<LotResponse> result = rawPage.map(row -> new LotResponse(
             (String)row[0], (String)row[1], (BigDecimal)row[2],
-            (BigDecimal)row[3], (Instant)row[4], (Instant)row[5], ((Number)row[6]).longValue()));
+            (BigDecimal)row[3], (LocalDateTime)row[4], (LocalDateTime)row[5], ((Number)row[6]).longValue()));
         return result;
     }
 
@@ -76,7 +76,7 @@ public class LotService {
         Page<Object[]> rawPage = lotRepository.findLotsWithMetadata(pageable);
         Page<LotResponse> result = rawPage.map(row -> new LotResponse(
             (String)row[0], (String)row[1], (BigDecimal)row[2],
-            (BigDecimal)row[3], (Instant)row[4], (Instant)row[5], ((Number)row[6]).longValue()));
+            (BigDecimal)row[3], (LocalDateTime)row[4], (LocalDateTime)row[5], ((Number)row[6]).longValue()));
         return result;
     }
 
@@ -91,6 +91,7 @@ public class LotService {
     public Lot buyLot(Long userId, BuyLotRequest buyLotRequest){
         Lot lot = lotRepository.findById(buyLotRequest.getLotId()).get();
         lot.setCurrentCost(buyLotRequest.getReqCost());
+        lot.setBuyerId(userId);
         return lotRepository.save(lot);
     }
 }

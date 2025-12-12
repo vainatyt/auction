@@ -1,6 +1,7 @@
 package com.project.auction.models;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.EmbeddedId;
@@ -18,13 +19,13 @@ public class Comment {
     @Column(name = "review")
     private String review;
     @Column(name = "data")
-    private Instant date;
+    private LocalDateTime date;
 
     public Comment() {
     }
 
     public Comment(CommentId id,
-                   Integer rating, String review,Instant date) {
+                   Integer rating, String review, LocalDateTime date) {
         this.id = id;
         this.rating = rating;
         this.review = review;
@@ -63,11 +64,11 @@ public class Comment {
         this.review = review;
     }
 
-    public Instant getDate() {
+    public LocalDateTime getDate() {
         return date;
     }
 
-    public void setDate(Instant date) {
+    public void setDate(LocalDateTime date) {
         this.date = date;
     }
 }

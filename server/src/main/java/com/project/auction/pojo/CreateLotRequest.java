@@ -2,6 +2,7 @@ package com.project.auction.pojo;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.web.multipart.MultipartFile;
@@ -15,8 +16,8 @@ public class CreateLotRequest {
     // данные по лоту (Lots)
     private BigDecimal currentCost;
     private BigDecimal rateStep;
-    private Instant startAuction;
-    private Instant endAuction;
+    private LocalDateTime startAuction;
+    private LocalDateTime endAuction;
 
     // список фотографий
     private List<MultipartFile> photoUuids;
@@ -61,19 +62,19 @@ public class CreateLotRequest {
     }
 
 
-    public Instant getStartAuction() {
+    public LocalDateTime getStartAuction() {
         return startAuction;
     }
 
-    public void setStartAuction(Instant startAuction) {
+    public void setStartAuction(LocalDateTime startAuction) {
         this.startAuction = startAuction;
     }
 
-    public Instant getEndAuction() {
+    public LocalDateTime getEndAuction() {
         return endAuction;
     }
 
-    public void setEndAuction(Instant endAuction) {
+    public void setEndAuction(LocalDateTime endAuction) {
         this.endAuction = endAuction;
     }
 

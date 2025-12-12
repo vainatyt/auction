@@ -37,9 +37,12 @@ public class JwtUtils {
 
 		UserDetailsImpl userPrincipal = (UserDetailsImpl) authentication.getPrincipal();
 
-		return Jwts.builder().subject((userPrincipal.getUsername())).issuedAt(new Date())
+		return Jwts.builder()
+				.subject((userPrincipal.getUsername()))
+				.issuedAt(new Date())
 				.expiration(new Date((new Date()).getTime() + jwtExpirationMs))
-				.signWith(key, Jwts.SIG.HS512).compact();
+				.signWith(key, Jwts.SIG.HS512)
+				.compact();
 	}
 
 	public boolean validateJwtToken(String jwt) {

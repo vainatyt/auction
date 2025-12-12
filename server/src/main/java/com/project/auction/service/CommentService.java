@@ -30,7 +30,7 @@ public class CommentService {
         comment.setId(new CommentId(commentatorId,request.getAddresseeId()));
         comment.setRating(request.getRating());
         comment.setReview(request.getReview());
-        comment.setDate(Instant.now());
+        comment.setDate(LocalDateTime.now());
 
         return commentRepository.save(comment);
     }

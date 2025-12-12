@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -57,7 +58,7 @@ public class TrackableItemService {
         Page<Object[]> rawPage = trackableItemRepository.findTrackedLotsByUserId(userId, pageable);
         Page<LotResponse> result = rawPage.map(row -> new LotResponse(
             (String)row[0], (String)row[1], (BigDecimal)row[2],
-            (BigDecimal)row[3], (Instant)row[4], (Instant)row[5], ((Number)row[6]).longValue()));
+            (BigDecimal)row[3], (LocalDateTime)row[4], (LocalDateTime)row[5], ((Number)row[6]).longValue()));
         return result;
     }
 

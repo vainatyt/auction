@@ -1,5 +1,6 @@
 package com.project.auction.controller;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,12 +69,13 @@ public class LotController {
     }
 
     @PostMapping("/buy")
-    public ResponseEntity<?> buyLot(BuyLotRequest buyLotRequest){
+    public ResponseEntity<?> buyLot(@RequestBody BuyLotRequest buyLotRequest){
+        System.out.println("buy " + buyLotRequest.getLotId()+' '+buyLotRequest.getReqCost());
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String username = auth.getName();
         Optional<User> user = userRepository.findByName(username);
-        lotService.buyLot(user.get().getId(), buyLotRequest);
-        return ResponseEntity.ok("user buy lot "+buyLotRequest.getLotId());
+        Lot lot = lotService.buyLot(user.get().getId(), buyLotRequest);
+        return ResponseEntity.ok(lot);
     }
 
 
