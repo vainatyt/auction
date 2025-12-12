@@ -1,6 +1,8 @@
 package com.project.auction.pojo;
 
 import java.math.BigDecimal;
+
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 import com.project.auction.models.Lot;
@@ -34,6 +36,8 @@ public class LotResponse {
 
     public LotResponse(String name, String discription, BigDecimal currentCost,
                          BigDecimal rateStep, LocalDateTime startAuction, LocalDateTime endAuction, Long id) {
+                        BigDecimal rateStep, LocalDateTime startAuction,
+                        LocalDateTime endAuction, Long id) {
         this.name = name;
         this.description = discription;
         this.currentCost = currentCost;

@@ -152,6 +152,7 @@ public void checkAndCloseExpiredLots() {
     public Lot buyLot(Long userId, BuyLotRequest buyLotRequest){
         Lot lot = lotRepository.findById(buyLotRequest.getLotId()).get();
         lot.setCurrentCost(buyLotRequest.getReqCost());
+        lot.setBuyerId(userId);
         return lotRepository.save(lot);
     }
 }

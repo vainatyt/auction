@@ -5,10 +5,8 @@ import com.project.auction.models.User;
 import com.project.auction.pojo.CreateCommentRequest;
 import com.project.auction.repository.UserRepository;
 import com.project.auction.service.CommentService;
-import com.project.auction.service.UserDetailsImpl;
 
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.Optional;
@@ -29,7 +27,7 @@ public class CommentController {
         this.commentService = commentService;
     }
 
-    @PostMapping("/comments")
+    @PostMapping("/write")
     public ResponseEntity<Comment> create(@RequestBody CreateCommentRequest request) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String username = auth.getName();

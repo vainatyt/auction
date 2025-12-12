@@ -1,5 +1,6 @@
 package com.project.auction.models;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
@@ -24,7 +25,7 @@ public class Comment {
     }
 
     public Comment(CommentId id,
-                   Integer rating, String review,LocalDateTime date) {
+                   Integer rating, String review,Instant date) {
         this.id = id;
         this.rating = rating;
         this.review = review;
