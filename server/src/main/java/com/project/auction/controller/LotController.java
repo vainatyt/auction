@@ -119,7 +119,7 @@ public class LotController {
             return ResponseEntity.status(HttpStatus.CREATED).body(lot);
             
         } catch (IllegalArgumentException e) {
-            log.warn("Invalid buy request from user {}: {}", user.getName(), e.getMessage());
+            log.warn("Invalid image format for lot {}", buyLotRequest.getLotId(), e);
             return ResponseEntity.badRequest().build();
         } catch (RuntimeException e) {
             log.error("Failed to process buy for user {}", user.getName(), e);

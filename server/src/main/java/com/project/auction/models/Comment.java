@@ -1,6 +1,5 @@
 package com.project.auction.models;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;

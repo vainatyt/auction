@@ -18,7 +18,7 @@ public interface TrackableItemRepository extends JpaRepository<TrackableItem, Lo
 
     List<TrackableItem> findByUserId(Long id);
 
-    List<TrackableItem> findByLotId(Long lot);
+    List<TrackableItem> findByLotId(Long lotId);
 
     @Query("SELECT t FROM TrackableItem t WHERE t.id.userId = :userId AND t.id.lotId = :lotId")
     Optional<TrackableItem> findByUserIdAndLotId(@Param("userId") Long userId, @Param("lotId") Long lotId);

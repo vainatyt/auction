@@ -3,7 +3,6 @@ package com.project.auction.service;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import org.slf4j.Logger;
@@ -25,8 +24,6 @@ import com.project.auction.repository.MetaDataLotRepository;
 import com.project.auction.repository.PhotoRepository;
 import com.project.auction.repository.TrackableItemRepository;
 import com.project.auction.repository.UserRepository;
-import com.project.auction.service.ImageService;
-import com.project.auction.service.MailService;
 
 @Service
 public class LotService {
