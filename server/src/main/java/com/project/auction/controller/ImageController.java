@@ -22,7 +22,6 @@ public class ImageController {
     public ResponseEntity<Resource> getImage(@PathVariable String uuid) {
         System.out.println("get photo: "+uuid);
         try {
-            // Пробуем .jpg, .png
             Path filePath = Paths.get(uploadDir + uuid + ".jpg");
             if (!Files.exists(filePath)) {
                 filePath = Paths.get(uploadDir + uuid + ".png");

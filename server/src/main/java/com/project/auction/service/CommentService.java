@@ -4,7 +4,6 @@ import com.project.auction.models.Comment;
 import com.project.auction.models.CommentId;
 import com.project.auction.pojo.CreateCommentRequest;
 import com.project.auction.repository.CommentRepository;
-import com.project.auction.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,12 +13,9 @@ import java.time.LocalDateTime;
 public class CommentService {
 
     private final CommentRepository commentRepository;
-    private final UserRepository userRepository;
 
-    public CommentService(CommentRepository commentRepository,
-                          UserRepository userRepository) {
+    public CommentService(CommentRepository commentRepository) {
         this.commentRepository = commentRepository;
-        this.userRepository = userRepository;
     }
 
     @Transactional

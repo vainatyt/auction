@@ -1,6 +1,8 @@
 package com.project.auction.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.MediaType;
@@ -20,32 +22,48 @@ import java.io.IOException;
 @Service
 public class ImageService {
     
-    @Autowired
-    private PhotoRepository photoRepository;
-    
-    private final String uploadDir = "users_lots_photo/";  // Создай папку в resources/static/uploads/
+    private static final Logger log = LoggerFactory.getLogger(ImageService.class);
+
+    private final PhotoRepository photoRepository;
+    private final String uploadDir;
+
+    public ImageService(PhotoRepository photoRepository, 
+                       @Value("${app.upload.dir:users_lots_photo/}") String uploadDir) {
+        this.photoRepository = photoRepository;
+        this.uploadDir = uploadDir;
+    }
     
     public Photo savePhoto(Long lotId, MultipartFile image){
-        //Делаем запись в бд
-        System.out.println("Делаем запись в бд");
         if (image == null || image.isEmpty()) {
-            System.out.println("Фото null");
+            log.debug("No image provided for lot {}", lotId);
             return null;
         }
+        validateImage(image);
         UUID uuid = saveImage(image);
-        return photoRepository.save(new Photo(lotId, uuid));    
+        Photo photo = new Photo(lotId, uuid);
+        
+        return photoRepository.save(photo);  
+    }
+
+    private void validateImage(MultipartFile image) {
+        if (image.getSize() > 5 * 1024 * 1024) {
+            throw new IllegalArgumentException("Image size exceeds 5MB");
+        }
+        
+        String contentType = image.getContentType();
+        if (contentType == null || (!contentType.startsWith("image/"))) {
+            throw new IllegalArgumentException("Invalid image format");
+        }
     }
 
     public UUID saveImage(MultipartFile image) {
         try {
-            // Генерируем UUID
             UUID uuid = UUID.randomUUID();
             String originalFilename = image.getOriginalFilename();
             String extension = originalFilename != null && originalFilename.contains(".")
                 ? originalFilename.substring(originalFilename.lastIndexOf("."))
                 : ".jpg";
             
-            // Путь для сохранения
             Path uploadPath = Paths.get(uploadDir);
             if (!Files.exists(uploadPath)) {
                 Files.createDirectories(uploadPath);
@@ -53,7 +71,6 @@ public class ImageService {
             
             Path filePath = uploadPath.resolve(uuid.toString() + extension);
             
-            // Сохраняем файл
             image.transferTo(filePath);
         
             return uuid; 
@@ -63,11 +80,9 @@ public class ImageService {
         }
     }
     
-    // Для отдачи файла по UUID
     public ResponseEntity<Resource> getImage(String uuid, String contentType) {
         try {
             Path filePath = Paths.get(uploadDir + uuid);
-            // Пробуем разные расширения
             if (!Files.exists(filePath)) {
                 filePath = Paths.get(uploadDir + uuid + ".jpg");
                 if (!Files.exists(filePath)) filePath = Paths.get(uploadDir + uuid + ".png");

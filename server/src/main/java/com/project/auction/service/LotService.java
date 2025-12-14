@@ -6,11 +6,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Pageable;
-import org.springframework.jdbc.core.JdbcTemplate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -26,111 +25,108 @@ import com.project.auction.repository.MetaDataLotRepository;
 import com.project.auction.repository.PhotoRepository;
 import com.project.auction.repository.TrackableItemRepository;
 import com.project.auction.repository.UserRepository;
+import com.project.auction.service.ImageService;
+import com.project.auction.service.MailService;
 
 @Service
 public class LotService {
 
-    @Autowired
-    private LotRepository lotRepository;
-
-    @Autowired
-    private MetaDataLotRepository metaDataLotRepository;
-
-    @Autowired
-    private PhotoRepository photoRepository;
-
-    @Autowired
-    private TrackableItemRepository trackableItemRepository;
-
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
+    private static final Logger log = LoggerFactory.getLogger(LotService.class);
     
-    @Autowired
-    private UserRepository userRepository;
+    private final LotRepository lotRepository;
+    private final MetaDataLotRepository metaDataLotRepository;
+    private final PhotoRepository photoRepository;
+    private final TrackableItemRepository trackableItemRepository;
+    private final UserRepository userRepository;
+    private final MailService mailService;
+    private final ImageService imageService;
 
-    @Autowired
-    private MailService mailService;
-
-    @Autowired
-    private ImageService imageService;
+    public LotService(
+            LotRepository lotRepository,
+            MetaDataLotRepository metaDataLotRepository,
+            PhotoRepository photoRepository,
+            TrackableItemRepository trackableItemRepository,
+            UserRepository userRepository,
+            MailService mailService,
+            ImageService imageService) {
+        this.lotRepository = lotRepository;
+        this.metaDataLotRepository = metaDataLotRepository;
+        this.photoRepository = photoRepository;
+        this.trackableItemRepository = trackableItemRepository;
+        this.userRepository = userRepository;
+        this.mailService = mailService;
+        this.imageService = imageService;
+    }
 
     @Transactional
     public Lot createLot(Long userId, CreateLotRequest req, MultipartFile image) {
-        Lot lot = new Lot(userId, req);
-        lot = lotRepository.save(lot);
-
-        String sql = "INSERT INTO metadata_lot (id_lot, name, description) VALUES (?, ?, ?)";
-
-        jdbcTemplate.update(sql, lot.getId(), req.getGoodsName(), req.getGoodsDescription());
-
-        imageService.savePhoto(lot.getId(),image);
-
-        return lot;
+        log.info("Creating lot for userId: {}", userId);
+        
+        try {
+            Lot lot = new Lot(userId, req);
+            lot = lotRepository.save(lot);
+            
+            MetaDataLot metadata = new MetaDataLot(lot.getId(),req.getGoodsName(),req.getGoodsDescription());
+            metaDataLotRepository.save(metadata);
+            
+            imageService.savePhoto(lot.getId(), image);
+            
+            log.info("Lot created successfully: id={}, userId={}", lot.getId(), userId);
+            return lot;
+            
+        } catch (Exception e) {
+            log.error("Failed to create lot for userId={}", userId, e);
+            throw new RuntimeException("Failed to create lot", e);
+        }
     }
 
     @Transactional
     public void checkAndCloseExpiredLots() {
-    LocalDateTime now = LocalDateTime.now();
-    List<Lot> lots = lotRepository.findExpiredLots(now);
-
-        for (Lot lot : lots) {
-            Long lotId = lot.getId();
-
-            // уведомляем владельца лота
-            userRepository.findById(lot.getOwnerId()).ifPresent(owner -> {
-                if (owner.getEmail() != null) {
-                    mailService.sendLotFinishedMail(
-                            owner.getEmail(),
-                            lotId,
-                            lot.getCurrentCost(),
-                            true
-                    );
-                }
-            });
-
-        // уведомляем всех, кто отслеживает лот
-        // предполагается метод репозитория, возвращающий все TrackableItem по lotId
-        List<TrackableItem> trackables = trackableItemRepository.findByUserId(lotId);
-        for (TrackableItem t : trackables) {
-            Long userId = t.getUserId();
-            userRepository.findById(userId).ifPresent(user -> {
+        log.info("Checking expired lots");
+        LocalDateTime now = LocalDateTime.now();
+        List<Lot> expiredLots = lotRepository.findExpiredLots(now);
+        
+        log.info("Found {} expired lots", expiredLots.size());
+        
+        for (Lot lot : expiredLots) {
+            try {
+                closeLot(lot);
+            } catch (Exception e) {
+                log.error("Failed to close lotId={}", lot.getId(), e);
+            }
+        }
+    }
+    
+    private void closeLot(Lot lot) {
+        Long lotId = lot.getId();
+        log.debug("Closing lot: {}", lotId);
+        
+        // Уведомляем продавца
+        userRepository.findById(lot.getOwnerId()).ifPresent(seller -> {
+            if (seller.getEmail() != null) {
+                mailService.sendLotFinishedMail(seller.getEmail(), lotId, lot.getCurrentCost(), true);
+                log.debug("Notified seller: {} for lot {}", seller.getEmail(), lotId);
+            }
+        });
+        
+        // Уведомляем трекеров
+        List<TrackableItem> trackers = trackableItemRepository.findByLotId(lotId);
+        for (TrackableItem tracker : trackers) {
+            userRepository.findById(tracker.getUserId()).ifPresent(user -> {
                 if (user.getEmail() != null) {
-                    mailService.sendLotFinishedMail(
-                            user.getEmail(),
-                            lotId,
-                            lot.getCurrentCost(),
-                            false
-                    );
+                    mailService.sendLotFinishedMail(user.getEmail(), lotId, lot.getCurrentCost(), false);
+                    log.debug("Notified tracker: {} for lot {}", user.getEmail(), lotId);
                 }
             });
         }
-
-        // удалить метаданные, фото, трекаблы и сам лот
-        metaDataLotRepository.deleteByLotId(lotId);
-        photoRepository.deleteByLotId(lotId);
-        trackableItemRepository.deleteById_LotId(lotId);
+        
         lotRepository.delete(lot);
-    }
-}
-
-  
-
-
-    @Transactional
-    public Page<Lot> getUserLots(Long userId, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        Page<Lot> pageLot = lotRepository.findByOwnerId(userId, pageable);
-        return pageLot;
+        log.info("Lot {} closed and deleted", lotId);
     }
 
-    @Transactional
-    public Page<Lot> getUserLots(Long userId, Pageable pageable) {
-        Page<Lot> pageLot = lotRepository.findByOwnerId(userId, pageable);
-        return pageLot;
-    }
-
-    @Transactional
+    @Transactional(readOnly = true)
     public Page<LotResponse> findUserLotsWithMetadata(Long ownerId, Pageable pageable) {
+        log.debug("Finding lots for sellerId={}, page={}", ownerId, pageable.getPageNumber());
         Page<Object[]> rawPage = lotRepository.findUserLotsWithMetadata(ownerId, pageable);
         Page<LotResponse> result = rawPage.map(row -> new LotResponse(
             (String)row[0], (String)row[1], (BigDecimal)row[2],
@@ -139,8 +135,9 @@ public class LotService {
         return result;
     }
 
-    @Transactional
-     public Page<LotResponse> findLotsWithMetadata(Pageable pageable) {
+    @Transactional(readOnly = true)
+    public Page<LotResponse> findLotsWithMetadata(Pageable pageable) {
+        log.debug("Finding all lots, page={}", pageable.getPageNumber());
         Page<Object[]> rawPage = lotRepository.findLotsWithMetadata(pageable);
         Page<LotResponse> result = rawPage.map(row -> new LotResponse(
             (String)row[0], (String)row[1], (BigDecimal)row[2],
@@ -149,18 +146,46 @@ public class LotService {
         return result;
     }
 
-    @Transactional
-    public LotResponse findLotWithMetadataById(Long id){
-        Optional<Lot> lot = lotRepository.findById(id);
-        Optional<MetaDataLot> meta = metaDataLotRepository.findByLotId(id);
-        return new LotResponse(lot.get(), meta.get(), photoRepository.findUuidByLotId(id));
+    @Transactional(readOnly = true)
+    public LotResponse findLotWithMetadataById(Long id) {
+        log.debug("Finding lot by id: {}", id);
+        Lot lot = lotRepository.findById(id).orElseThrow(() -> {
+                log.warn("Lot not found: id={}", id);
+                return new IllegalArgumentException("Lot not found: " + id);
+            });
+        MetaDataLot meta = metaDataLotRepository.findByLotId(id).orElseThrow(() -> {
+                log.warn("Meta data of lot not found: id={}", id);
+                return new IllegalArgumentException("Meta data of lot not found: " + id);
+            });
+        return new LotResponse(lot, meta, photoRepository.findUuidByLotId(id));
+            
     }
 
     @Transactional
-    public Lot buyLot(Long userId, BuyLotRequest buyLotRequest){
-        Lot lot = lotRepository.findById(buyLotRequest.getLotId()).get();
-        lot.setCurrentCost(buyLotRequest.getReqCost());
-        lot.setBuyerId(userId);
-        return lotRepository.save(lot);
+    public Lot buyLot(Long buyerId, BuyLotRequest request) {
+        log.info("Buy attempt: buyerId={}, lotId={}", buyerId, request.getLotId());
+        
+        Lot lot = lotRepository.findById(request.getLotId())
+            .orElseThrow(() -> {
+                log.warn("Lot not found for buy: id={}", request.getLotId());
+                return new IllegalArgumentException("Lot not found");
+            });
+        
+        validateBid(lot, request.getReqCost());
+        
+        lot.setCurrentCost(request.getReqCost());
+        lot.setBuyerId(buyerId);
+        
+        Lot savedLot = lotRepository.save(lot);
+        log.info("Lot {} bought by user {}", savedLot.getId(), buyerId);
+        return savedLot;
+    }
+    
+    private void validateBid(Lot lot, BigDecimal bid) {
+        if (bid.compareTo(lot.getCurrentCost().add(lot.getRateStep())) < 0) {
+            log.warn("Invalid bid: lotId={}, bid={}, minRequired={}", 
+                    lot.getId(), bid, lot.getCurrentCost().add(lot.getRateStep()));
+            throw new IllegalArgumentException("Bid must be at least " + lot.getRateStep() + " higher than current price");
+        }
     }
 }

@@ -9,7 +9,6 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.project.auction.models.TrackableItem;
-import com.project.auction.models.Lot;
 
 import java.util.List;
 import java.util.Optional;
@@ -19,7 +18,7 @@ public interface TrackableItemRepository extends JpaRepository<TrackableItem, Lo
 
     List<TrackableItem> findByUserId(Long id);
 
-    List<TrackableItem> findByLotId(Lot lot);
+    List<TrackableItem> findByLotId(Long lot);
 
     @Query("SELECT t FROM TrackableItem t WHERE t.id.userId = :userId AND t.id.lotId = :lotId")
     Optional<TrackableItem> findByUserIdAndLotId(@Param("userId") Long userId, @Param("lotId") Long lotId);
