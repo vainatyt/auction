@@ -72,6 +72,7 @@ public class WebSecurityConfig {
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/lots/**").authenticated()
                 .requestMatchers("/profile").authenticated() 
+                .requestMatchers("/users_lots_photo/**").authenticated() 
                 .anyRequest().authenticated()
             );
         http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);

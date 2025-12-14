@@ -1,28 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import CloseApi from '../api/CloseApi';
-
-interface Lot {
-  id: number;
-  name: string;
-  description: string;
-  currentCost: number;
-  rateStep: number;
-  startAuction: string;
-  endAuction: string;
-  buyerId?: number;
-  imageUrl?: string;
-}
+import { Lot } from '../types/Lot';
 
 const LotDetailPage: React.FC = () => {
   const { lotId } = useParams<{ lotId: string }>();
   const [lot, setLot] = useState<Lot | null>(null);
   const [loading, setLoading] = useState(true);
+  const [imageLoading, setImageLoading] = useState(false);
   const [pinned, setPinned] = useState(false);
   const [bidAmount, setBidAmount] = useState('');
   const [minBid, setMinBid] = useState(0);
   const [buyLoading, setBuyLoading] = useState(false);
   const [auctionEnded, setAuctionEnded] = useState(false);
+
+  const imgRef = useRef<HTMLImageElement>(null);
 
   useEffect(() => {
     if (lotId) {
@@ -33,7 +25,7 @@ const LotDetailPage: React.FC = () => {
           
           const min = data.currentCost + data.rateStep;
           setMinBid(min);
-          setBidAmount(min.toString()); // ставим минимум по умолчанию
+          setBidAmount(min.toString());
           
           setAuctionEnded(new Date(data.endAuction) < new Date());
         })
@@ -41,6 +33,27 @@ const LotDetailPage: React.FC = () => {
         .finally(() => setLoading(false));
     }
   }, [lotId]);
+
+  useEffect(() => {
+    if (!lot?.uuid || !imgRef.current) return;
+    
+    setImageLoading(true);
+    const img = imgRef.current;
+    
+    CloseApi.get(`/users_lots_photo/${lot.uuid}`, {
+      responseType: 'blob'
+    })
+    .then(res => {
+      const url = URL.createObjectURL(res.data);
+      img.src = url;
+      img.style.display = 'block';
+    })
+    .catch(err => {
+      console.error('Фото ошибка:', err);
+      img.style.display = 'none';
+    })
+    .finally(() => setImageLoading(false));
+  }, [lot?.uuid]);
 
   const handlePin = async () => {
     try {
@@ -98,19 +111,38 @@ const LotDetailPage: React.FC = () => {
     }
   };
 
-  if (loading) return <div>Загрузка лота...</div>;
-  if (!lot) return <div>Лот не найден</div>;
+  if (loading) return <div className="flex items-center justify-center h-screen">Загрузка лота...</div>;
+  if (!lot) return <div className="flex items-center justify-center h-screen">Лот не найден</div>;
 
   return (
     <div className="lot-detail max-w-4xl mx-auto p-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Изображение */}
-        <div className="lot-image">
+        <div className="lot-image relative">
+          {imageLoading && (
+            <div className="absolute inset-0 bg-gray-100 flex items-center justify-center rounded-lg z-10 backdrop-blur-sm">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-2"></div>
+                <p className="text-sm text-gray-500">⏳ Загружается...</p>
+              </div>
+            </div>
+          )}
           <img 
-            src={lot.imageUrl || '/placeholder.jpg'} 
+            ref={imgRef}
             alt={lot.name} 
-            className="w-full h-96 object-cover rounded-lg shadow-xl" 
+            className="w-full h-32 md:h-80 object-cover rounded-lg shadow-xl"
+            style={{ width: '200px', height: '200px' }}
+            onLoad={() => setImageLoading(false)}
+            onError={() => setImageLoading(false)}
           />
+          {(!lot.uuid && !imageLoading) && (
+            <div className="absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center rounded-lg">
+              <div className="text-center text-gray-500 p-8">
+                <div className="text-4xl mb-2">📷</div>
+                <p>Фото отсутствует</p>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Информация */}
@@ -139,7 +171,7 @@ const LotDetailPage: React.FC = () => {
             <p>{lot.description}</p>
           </div>
 
-          {/* 🆕 Форма ставки */}
+          {/* Форма ставки */}
           <div className="bid-form bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-xl border">
             <h3 className="text-lg font-semibold mb-4 flex items-center">
               <span className="w-2 h-2 bg-green-400 rounded-full mr-2"></span>

@@ -2,14 +2,12 @@ package com.project.auction.service;
 
 import com.project.auction.models.Comment;
 import com.project.auction.models.CommentId;
-import com.project.auction.models.User;
 import com.project.auction.pojo.CreateCommentRequest;
 import com.project.auction.repository.CommentRepository;
 import com.project.auction.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
 
 @Service

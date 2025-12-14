@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Lot } from '../types/Lot';
 import CloseApi from '../api/CloseApi';
 
@@ -15,8 +15,11 @@ const RenderLot: React.FC<RenderLotProps> = ({ lot }) => {
   const [loadingTracked, setLoadingTracked] = useState<boolean>(false);
   const [actionLoading, setActionLoading] = useState<boolean>(false);
 
+  const imgRef = useRef<HTMLImageElement>(null);
+
   const openLotDetails = () => {
     window.open(`/lot/${lot.id}`, '_blank', 'noopener,noreferrer');
+    console.log('lot.uuid:', lot.uuid);
   };
 
   // Стандартная функция проверки статуса отслеживания
@@ -57,7 +60,6 @@ const pinLot = useCallback(async (id: number): Promise<boolean> => {
       console.error('pinLot: некорректный статус', res?.status);
       throw new Error(`HTTP ${res?.status}`);
     }
-    const payload = res.data;
 
     setIsTracked(true);
     return true;
@@ -90,6 +92,19 @@ const unpinLot = useCallback(async (id: number): Promise<boolean> => {
     if (lot?.id != null) {
       fetchIsTracked(lot.id);
     }
+    if (!lot.uuid || !imgRef.current) return;
+    const img = imgRef.current;
+    CloseApi.get(`/users_lots_photo/${lot.uuid}`, {
+    responseType: 'blob'  // ✅ Важно для фото!
+  })
+  .then(res => {
+    const url = URL.createObjectURL(res.data);  // ✅ res.data для axios
+    img.src = url;
+  })
+  .catch(err => {
+    console.error('Фото ошибка:', err);
+    img.style.display = 'none';
+  });
   }, [lot?.id, fetchIsTracked]);
 
   // Обработчик клика по кнопке отслеживания
@@ -132,7 +147,51 @@ const unpinLot = useCallback(async (id: number): Promise<boolean> => {
         }}>
           {lot.name}
         </h3>
+        {/* ✅ Фото лота (новое!) */}
+        {lot.uuid && (
+          <div style={{ 
+            marginBottom: '1rem', 
+            textAlign: 'center',
+            borderRadius: '12px',
+            overflow: 'hidden',
+            boxShadow: '0 8px 24px rgba(0,0,0,0.12)'
+          }}>
+            <img 
+              ref={imgRef} // Backend endpoint
+              alt={lot.name}
+              style={{
+                width: '100%',
+                height: 200,
+                objectFit: 'cover',
+                borderRadius: '12px',
+                transition: 'transform 0.3s ease'
+              }}
+              onError={(e) => {
+                // Fallback если фото не найдено
+                e.currentTarget.style.display = 'none';
+              }}
+            />
+          </div>
+        )}
         
+        {/* Placeholder если нет фото */}
+        {!lot.uuid && (
+          <div style={{
+            width: '100%',
+            height: 200,
+            background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
+            borderRadius: '12px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginBottom: '1rem',
+            border: '2px dashed #dee2e6',
+            color: '#6c757d',
+            fontSize: '0.95em'
+          }}>
+            📷 Фото отсутствует
+          </div>
+        )}
         <div style={{ marginBottom: '1rem' }}>
           <strong style={{ color: '#666' }}>Текущая цена:</strong>{' '}
           <span style={{ 

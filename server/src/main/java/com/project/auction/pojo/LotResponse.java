@@ -1,8 +1,10 @@
 package com.project.auction.pojo;
 
 import java.math.BigDecimal;
+
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 import com.project.auction.models.Lot;
 import com.project.auction.models.MetaDataLot;
@@ -19,11 +21,13 @@ public class LotResponse {
     private BigDecimal rateStep;
     private LocalDateTime startAuction;
     private LocalDateTime endAuction;
+
+    private UUID uuid;
     
     public LotResponse() {
     }
 
-    public LotResponse(Lot lot, MetaDataLot meta){
+    public LotResponse(Lot lot, MetaDataLot meta, UUID uuid){
         this.id = lot.getId();
         this.name = meta.getName();
         this.description = meta.getDescription();
@@ -31,11 +35,12 @@ public class LotResponse {
         this.rateStep = lot.getRateStep();
         this.startAuction = lot.getStartAuction();
         this.endAuction = lot.getEndAuction();
+        this.uuid = uuid;
     }
 
     public LotResponse(String name, String discription, BigDecimal currentCost,
-                        BigDecimal rateStep, LocalDateTime startAuction,
-                        LocalDateTime endAuction, Long id) {
+                         BigDecimal rateStep, LocalDateTime startAuction,
+                          LocalDateTime endAuction, Long id, UUID uuid) {
         this.name = name;
         this.description = discription;
         this.currentCost = currentCost;
@@ -43,6 +48,7 @@ public class LotResponse {
         this.startAuction = startAuction;
         this.endAuction = endAuction;
         this.id = id;
+        this.uuid = uuid;
     }
     
     public Long getId(){
@@ -103,5 +109,13 @@ public class LotResponse {
 
     public void setEndAuction(LocalDateTime endAuction) {
         this.endAuction = endAuction;
+    }
+
+    public UUID getUuid(){
+        return uuid;
+    }
+
+    public void setUuid(UUID uuid){
+        this.uuid = uuid;
     }
 }

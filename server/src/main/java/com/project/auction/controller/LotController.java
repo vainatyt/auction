@@ -6,10 +6,12 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.project.auction.models.Lot;
 import com.project.auction.models.User;
@@ -34,13 +36,18 @@ public class LotController {
     @Autowired
     private TrackableItemService trackableItemService;
 
-    @PostMapping("/create")
-    public ResponseEntity<?> createLot(@RequestBody CreateLotRequest request) {
+    @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> createLot(
+            @RequestPart("request") CreateLotRequest request,
+            @RequestPart(value = "image", required = false) MultipartFile image) {
         System.out.println("start create lot");
+        System.out.println("Image received: {} (size: {} bytes)" +
+        image != null ? image.getOriginalFilename() : "NULL" + 
+        image != null ? image.getSize() : 0);
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String username = auth.getName();
         Optional<User> user = userRepository.findByName(username);
-        lotService.createLot(user.get().getId(), request);
+        lotService.createLot(user.get().getId(), request, image);
         return ResponseEntity.ok(new MessageResponse("lot is created"));
     }
 

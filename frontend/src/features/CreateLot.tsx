@@ -27,6 +27,8 @@ const CreateLotPage: React.FC = () => {
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -84,8 +86,19 @@ const CreateLotPage: React.FC = () => {
         startAuction: formData.startAuction,
         endAuction: formData.endAuction,
       };
+      
+      const formDataToSend = new FormData();
+      formDataToSend.append('request', new Blob([JSON.stringify(lotData)], { 
+        type: 'application/json' 
+      }));
+      
+      if (imageFile) {
+        formDataToSend.append('image', imageFile);
+      }
 
-      await CloseApi.post('/lots/create', lotData);
+      await CloseApi.post('/lots/create', formDataToSend, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
       setSuccess(true);
       
       
@@ -204,6 +217,62 @@ const CreateLotPage: React.FC = () => {
               </span>
             )}
           </div>
+          {/* Загрузка фото */}
+          <div style={{ marginBottom: '1.5rem' }}>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#333' }}>
+              Фото товара
+            </label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  setImageFile(file);
+                  // Preview
+                  const reader = new FileReader();
+                  reader.onload = (ev) => setImagePreview(ev.target?.result as string);
+                  reader.readAsDataURL(file);
+                  
+                  // Очистка ошибки
+                  setErrors(prev => {
+                    const newErrors = { ...prev };
+                    delete newErrors.image;
+                    return newErrors;
+                  });
+                }
+              }}
+              style={{
+                width: '100%',
+                padding: '0.75rem',
+                border: errors.image ? '2px solid #dc3545' : '1px solid #ddd',
+                borderRadius: '8px',
+                fontSize: '1rem',
+              }}
+            />
+            {errors.image && (
+              <span style={{ color: '#dc3545', fontSize: '0.875rem', marginTop: '0.25rem', display: 'block' }}>
+                {errors.image}
+              </span>
+            )}
+            
+            {/* Preview */}
+            {imagePreview && (
+              <div style={{ marginTop: '1rem' }}>
+                <img 
+                  src={imagePreview} 
+                  alt="Preview" 
+                  style={{ 
+                    maxWidth: '200px', 
+                    maxHeight: '200px', 
+                    borderRadius: '8px',
+                    boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
+                  }} 
+                />
+              </div>
+            )}
+          </div>
+
           {/* Начальная цена */}
           <div style={{ marginBottom: '1.5rem' }}>
             <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#333' }}>

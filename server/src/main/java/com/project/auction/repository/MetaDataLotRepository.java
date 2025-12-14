@@ -14,4 +14,5 @@ public interface MetaDataLotRepository extends JpaRepository<MetaDataLot, Long> 
     Optional<MetaDataLot> findByLotId(Long lotId);
     Page<MetaDataLot> findByLotId(Long lotId, Pageable pageable);
     Page<MetaDataLot> findByLotIdIn(List<Long> lotIds, Pageable pageable);
+    void deleteByLotId(Long lotId);
 }

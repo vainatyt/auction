@@ -7,5 +7,5 @@ export interface Lot {
   startAuction: string;
   endAuction: string;
   buyerId?: number;
-  imageUrl?: string;
+  uuid?: string;
 }   

@@ -6,15 +6,15 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import com.project.auction.models.TrackableItem;
 import com.project.auction.models.Lot;
-import com.project.auction.models.User;
-import com.project.auction.pojo.LotResponse;
 
 import java.util.List;
 import java.util.Optional;
 
+@Repository
 public interface TrackableItemRepository extends JpaRepository<TrackableItem, Long> {
 
     List<TrackableItem> findByUserId(Long id);
@@ -29,19 +29,21 @@ public interface TrackableItemRepository extends JpaRepository<TrackableItem, Lo
     void deleteByUserIdAndLotId(@Param("userId") Long userId, @Param("lotId") Long lotId);
 
     @Query(value = "SELECT m.name, m.description, l.current_cost, l.rate_step, " +
-               "l.start_auction, l.end_auction, l.id_lot " +
-               "FROM lots l " +
-               "LEFT JOIN metadata_lot m ON l.id_lot = m.id_lot " +
-               "INNER JOIN trackable_items t ON l.id_lot = t.id_lot " +  // ✅ INNER для отслеживаемых
-               "WHERE t.id_user = :userId",
-       countQuery = "SELECT COUNT(DISTINCT l.id_lot) " +           // ✅ ФИКС countQuery!
-                    "FROM lots l " +
-                    "INNER JOIN trackable_items t ON l.id_lot = t.id_lot " +
-                    "WHERE t.id_user = :userId", 
-       nativeQuery = true)
-    Page<Object[]> findTrackedLotsByUserId(
-        @Param("userId") Long userId,
-        Pageable pageable
-    );
+               "l.start_auction, l.end_auction, l.id_lot, p.uuid " + 
+        "FROM lots l " +
+        "LEFT JOIN metadata_lot m ON l.id_lot = m.id_lot " +
+        "INNER JOIN trackable_items t ON l.id_lot = t.id_lot " +
+        "LEFT JOIN photo p ON l.id_lot = p.id_lot " + 
+        "WHERE t.id_user = :userId",
+     countQuery = "SELECT COUNT(DISTINCT l.id_lot) " +
+                  "FROM lots l " +
+                  "INNER JOIN trackable_items t ON l.id_lot = t.id_lot " +
+                  "WHERE t.id_user = :userId", 
+     nativeQuery = true)
+Page<Object[]> findTrackedLotsByUserId(
+    @Param("userId") Long userId,
+    Pageable pageable
+);
 
+    void deleteById_LotId(Long lotId);
 }
