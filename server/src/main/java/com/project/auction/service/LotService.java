@@ -15,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.project.auction.models.Lot;
 import com.project.auction.models.MetaDataLot;
+import com.project.auction.models.Photo;
 import com.project.auction.models.TrackableItem;
 import com.project.auction.pojo.BuyLotRequest;
 import com.project.auction.pojo.CreateLotRequest;
@@ -62,12 +63,11 @@ public class LotService {
         try {
             Lot lot = new Lot(userId, req);
             lot = lotRepository.save(lot);
-            
+            log.info("Save lot info: id={}, userId={}", lot.getId(), userId);
             MetaDataLot metadata = new MetaDataLot(lot.getId(),req.getGoodsName(),req.getGoodsDescription());
             metaDataLotRepository.save(metadata);
-            
+            log.info("Save meta data: id={}, userId={}", metadata.getId(), userId);
             imageService.savePhoto(lot.getId(), image);
-            
             log.info("Lot created successfully: id={}, userId={}", lot.getId(), userId);
             return lot;
             
@@ -94,6 +94,7 @@ public class LotService {
         }
     }
     
+    @Transactional
     private void closeLot(Lot lot) {
         Long lotId = lot.getId();
         log.debug("Closing lot: {}", lotId);
@@ -107,16 +108,26 @@ public class LotService {
         });
         
         // Уведомляем трекеров
-        List<TrackableItem> trackers = trackableItemRepository.findByLotId(lotId);
+        List<TrackableItem> trackers = trackableItemRepository.findByIdLotId(lotId);
         for (TrackableItem tracker : trackers) {
             userRepository.findById(tracker.getUserId()).ifPresent(user -> {
                 if (user.getEmail() != null) {
                     mailService.sendLotFinishedMail(user.getEmail(), lotId, lot.getCurrentCost(), false);
                     log.debug("Notified tracker: {} for lot {}", user.getEmail(), lotId);
                 }
+            trackableItemRepository.delete(tracker);
             });
         }
-        
+        MetaDataLot metaDataLot = metaDataLotRepository.findByLotId(lot.getId()).
+            orElseThrow(()->{
+                    log.warn("MetaDataLot not found: id_lot={}",lot.getId());
+                    return new RuntimeException("MetaDataLot not found");
+            });
+        metaDataLotRepository.delete(metaDataLot);
+        log.info("delete MetaData lot={}",lotId);
+        Photo photo = photoRepository.findByLotId(lotId);
+        imageService.delete(photo);
+        log.info("delete photo lot={}",lotId);
         lotRepository.delete(lot);
         log.info("Lot {} closed and deleted", lotId);
     }

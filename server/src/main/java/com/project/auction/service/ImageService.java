@@ -5,12 +5,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.project.auction.models.Photo;
+import com.project.auction.pojo.MessageResponse;
 import com.project.auction.repository.PhotoRepository;
 
 import java.nio.file.Files;
@@ -99,6 +101,36 @@ public class ImageService {
                 
         } catch (Exception e) {
             return ResponseEntity.notFound().build();
+        }
+    }
+
+    public void delete(Photo photo){
+        String uuid = photoRepository.findUuidByLotId(photo.getLotId()).toString();
+         try {
+        // 1. Ищем файл (аналогично getImage)
+        Path filePath = Paths.get(uploadDir + uuid);
+        if (!Files.exists(filePath)) {
+            filePath = Paths.get(uploadDir + uuid + ".jpg");
+            if (!Files.exists(filePath)) {
+                filePath = Paths.get(uploadDir + uuid + ".png");
+            }
+        }
+        
+        if (!Files.exists(filePath)) {
+            throw new RuntimeException(String.format("Photo lot=%d not found", photo.getLotId()));
+        }
+        
+        // 2. Удаляем файл
+        Files.delete(filePath);
+        log.info("Image deleted: {}", filePath);
+        
+        // 3. Удаляем запись из БД (предполагаю таблицу image_metadata)
+        photoRepository.deleteByLotId(photo.getLotId());
+            
+        } catch (IOException e) {
+            log.error("Failed to delete image {}: {}", uuid, e.getMessage());
+            throw new RuntimeException(String.format("Failed to delete image lot=%d", photo.getLotId()));
+
         }
     }
 }
