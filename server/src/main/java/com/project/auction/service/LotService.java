@@ -4,19 +4,24 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.project.auction.models.Lot;
 import com.project.auction.models.MetaDataLot;
 import com.project.auction.models.Photo;
 import com.project.auction.models.TrackableItem;
+import com.project.auction.models.User;
 import com.project.auction.pojo.BuyLotRequest;
 import com.project.auction.pojo.CreateLotRequest;
 import com.project.auction.pojo.LotResponse;
@@ -98,26 +103,40 @@ public class LotService {
     private void closeLot(Lot lot) {
         Long lotId = lot.getId();
         log.debug("Closing lot: {}", lotId);
-        
+        User owner = userRepository.findById(lot.getOwnerId())
+            .orElseThrow(() -> {
+                log.warn("User not found: id={}", lot.getOwnerId());
+                return new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found");
+            });
+        User buyer = userRepository.findById(lot.getBuyerId())
+            .orElseThrow(() -> {
+                log.warn("User not found: id={}", lot.getBuyerId());
+                return new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found");
+            });
+
+        LotResponse lotResponse = findLotWithMetadataById(lot.getId());
         // Уведомляем продавца
-        userRepository.findById(lot.getOwnerId()).ifPresent(seller -> {
-            if (seller.getEmail() != null) {
-                mailService.sendLotFinishedMail(seller.getEmail(), lotId, lot.getCurrentCost(), true);
-                log.debug("Notified seller: {} for lot {}", seller.getEmail(), lotId);
-            }
-        });
-        
+        mailService.notifyOwner(owner, buyer, lotResponse);
+        log.info("notify owner={} lot={}",owner.getId(),lot.getId());
+        // Уведомляем покупателя
+        mailService.notifyBuyer(owner, buyer, lotResponse);
+        log.info("notify buyer={} lot={}",buyer.getId(),lot.getId());
         // Уведомляем трекеров
         List<TrackableItem> trackers = trackableItemRepository.findByIdLotId(lotId);
+        List<Long> userIds = trackers.stream()
+            .map(TrackableItem::getUserId)
+            .distinct()
+            .collect(Collectors.toList());
+        List<User> users = userRepository.findAllById(userIds).stream()
+            .filter(Objects::nonNull)
+            .collect(Collectors.toList()); 
+        mailService.notifyTrack(users, lotResponse);
+        log.info("notify users who tracked lot={}",lot.getId());
         for (TrackableItem tracker : trackers) {
-            userRepository.findById(tracker.getUserId()).ifPresent(user -> {
-                if (user.getEmail() != null) {
-                    mailService.sendLotFinishedMail(user.getEmail(), lotId, lot.getCurrentCost(), false);
-                    log.debug("Notified tracker: {} for lot {}", user.getEmail(), lotId);
-                }
             trackableItemRepository.delete(tracker);
-            });
+            log.info("delete track note for user={} by lot={}",tracker.getUserId(),tracker.getLotId());
         }
+
         MetaDataLot metaDataLot = metaDataLotRepository.findByLotId(lot.getId()).
             orElseThrow(()->{
                     log.warn("MetaDataLot not found: id_lot={}",lot.getId());
@@ -126,8 +145,10 @@ public class LotService {
         metaDataLotRepository.delete(metaDataLot);
         log.info("delete MetaData lot={}",lotId);
         Photo photo = photoRepository.findByLotId(lotId);
-        imageService.delete(photo);
-        log.info("delete photo lot={}",lotId);
+        if(photo != null){
+            imageService.delete(photo);
+            log.info("delete photo lot={}",lotId);
+        }
         lotRepository.delete(lot);
         log.info("Lot {} closed and deleted", lotId);
     }
