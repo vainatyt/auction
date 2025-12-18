@@ -60,7 +60,7 @@ public class MailService {
             buyer.getName(),
             buyer.getEmail()
         );
-        Mail mail = new Mail("Purchase notification",message,owner.getId());
+        Mail mail = new Mail(message,"Purchase notification",owner.getId());
         createMail(mail);
     }
 
@@ -83,7 +83,7 @@ public class MailService {
             owner.getEmail()
         );
         
-        Mail mail = new Mail("Purchase confirmation", message, buyer.getId());
+        Mail mail = new Mail( message, "Purchase confirmation", buyer.getId());
         createMail(mail);
     }
 
@@ -105,7 +105,7 @@ public class MailService {
                 lotResponse.getName(),
                 lotResponse.getCurrentCost()
             );
-            Mail mail = new Mail("Tracked auction completed", message, user.getId());
+            Mail mail = new Mail( message, "Tracked auction completed", user.getId());
             createMail(mail);
         }
     }

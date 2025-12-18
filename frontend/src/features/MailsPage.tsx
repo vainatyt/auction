@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import CloseApi from '../api/CloseApi'; // путь подправь под свой проект
+import CloseApi from '../api/CloseApi';
 
 interface Mail {
   id: number;
@@ -12,14 +12,16 @@ interface MailPage {
   content: Mail[];
   totalPages: number;
   totalElements: number;
-  number: number; // текущая страница (0-based)
+  number: number;
   size: number;
 }
 
 const MailsPage: React.FC = () => {
   const [page, setPage] = useState<MailPage | null>(null);
   const [loading, setLoading] = useState(false);
-  const [pageNumber, setPageNumber] = useState(0); // 0-based
+  const [deleting, setDeleting] = useState<Set<number>>(new Set());
+  const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
+  const [pageNumber, setPageNumber] = useState(0);
   const [pageSize] = useState(10);
 
   const loadMails = async (pageNum = 0) => {
@@ -35,6 +37,34 @@ const MailsPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const deleteMail = async (mailId: number) => {
+    setDeleteConfirm(mailId);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteConfirm) return;
+    
+    try {
+      setDeleting(prev => new Set(prev).add(deleteConfirm));
+      await CloseApi.delete(`/mail/delete/${deleteConfirm}`);
+      await loadMails(pageNumber);
+    } catch (e) {
+      console.error('Ошибка удаления письма:', e);
+      alert('Ошибка при удалении письма');
+    } finally {
+      setDeleting(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(deleteConfirm);
+        return newSet;
+      });
+      setDeleteConfirm(null);
+    }
+  };
+
+  const cancelDelete = () => {
+    setDeleteConfirm(null);
   };
 
   useEffect(() => {
@@ -59,6 +89,14 @@ const MailsPage: React.FC = () => {
         <button
           onClick={() => loadMails(pageNumber)}
           disabled={loading}
+          style={{
+            padding: '0.5rem 1rem',
+            background: '#007bff',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: loading ? 'not-allowed' : 'pointer',
+          }}
         >
           {loading ? 'Загрузка...' : 'Обновить'}
         </button>
@@ -70,7 +108,7 @@ const MailsPage: React.FC = () => {
   const mails = page.content;
 
   return (
-    <div>
+    <div style={{ padding: '2rem', maxWidth: '800px', margin: '0 auto' }}>
       <div
         style={{
           display: 'flex',
@@ -102,6 +140,13 @@ const MailsPage: React.FC = () => {
           <button
             onClick={prevPage}
             disabled={loading || page.number === 0}
+            style={{
+              padding: '0.5rem 1rem',
+              background: '#6c757d',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+            }}
           >
             Назад
           </button>
@@ -110,9 +155,14 @@ const MailsPage: React.FC = () => {
           </span>
           <button
             onClick={nextPage}
-            disabled={
-              loading || page.number >= page.totalPages - 1
-            }
+            disabled={loading || page.number >= page.totalPages - 1}
+            style={{
+              padding: '0.5rem 1rem',
+              background: '#6c757d',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+            }}
           >
             Вперед
           </button>
@@ -128,7 +178,6 @@ const MailsPage: React.FC = () => {
           }}
         >
           <p>📭 Писем нет</p>
-          <p>Отправьте тестовое письмо для проверки</p>
         </div>
       ) : (
         <div
@@ -165,9 +214,6 @@ const MailsPage: React.FC = () => {
                   color: '#555',
                 }}
               >
-                <p>
-                  <strong>Пользователь ID:</strong> {mail.userId}
-                </p>
               </div>
 
               <div
@@ -183,8 +229,92 @@ const MailsPage: React.FC = () => {
               >
                 {mail.message}
               </div>
+
+              <button
+                onClick={() => deleteMail(mail.id)}
+                style={{
+                  marginTop: '1rem',
+                  padding: '0.5rem 1rem',
+                  background: '#dc3545',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  float: 'right',
+                }}
+              >
+                Удалить
+              </button>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* ✅ Модальное окно подтверждения удаления */}
+      {deleteConfirm && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0,0,0,0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+          }}
+        >
+          <div
+            style={{
+              background: 'white',
+              padding: '2rem',
+              borderRadius: '8px',
+              maxWidth: '400px',
+              boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+            }}
+          >
+            <h3 style={{ margin: '0 0 1rem 0', color: '#333' }}>Удалить письмо?</h3>
+            <p>Вы уверены, что хотите удалить это письмо?</p>
+            <div
+              style={{
+                display: 'flex',
+                gap: '1rem',
+                justifyContent: 'flex-end',
+                marginTop: '1.5rem',
+              }}
+            >
+              <button
+                onClick={cancelDelete}
+                style={{
+                  padding: '0.5rem 1rem',
+                  background: '#6c757d',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                }}
+              >
+                Отмена
+              </button>
+              <button
+                onClick={confirmDelete}
+                disabled={deleting.has(deleteConfirm)}
+                style={{
+                  padding: '0.5rem 1rem',
+                  background: '#dc3545',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: deleting.has(deleteConfirm) ? 'not-allowed' : 'pointer',
+                  opacity: deleting.has(deleteConfirm) ? 0.7 : 1,
+                }}
+              >
+                {deleting.has(deleteConfirm) ? 'Удаляется...' : 'Удалить'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
