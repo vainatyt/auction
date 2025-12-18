@@ -73,4 +73,9 @@ public class User{
         this.rating = rating;
     }
 
+    public void setUsername(String string) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'setUsername'");
+    }
+
 }

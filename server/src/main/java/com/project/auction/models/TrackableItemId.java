@@ -13,7 +13,7 @@ public class TrackableItemId implements Serializable{
     @Column(name = "id_user")
     private Long userId;
 
-    TrackableItemId(){}
+    public TrackableItemId(){}
 
     TrackableItemId(Long lotId, long userId){
         this.lotId = lotId;

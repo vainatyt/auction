@@ -29,16 +29,16 @@ import com.project.auction.pojo.SignupRequest;
 public class AuthController {
 
     private static final Logger log = LoggerFactory.getLogger(AuthController.class);
-    
+
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
 
     public AuthController(AuthenticationManager authenticationManager,
-                         UserRepository userRepository,
-                         PasswordEncoder passwordEncoder,
-                         JwtUtils jwtUtils) {
+                          UserRepository userRepository,
+                          PasswordEncoder passwordEncoder,
+                          JwtUtils jwtUtils) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
@@ -49,20 +49,22 @@ public class AuthController {
     public ResponseEntity<JwtResponse> authUser(@RequestBody LoginRequest loginRequest) {
         try {
             Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                    loginRequest.getUsername(), 
-                    loginRequest.getPassword()));
-            
+                    new UsernamePasswordAuthenticationToken(
+                            loginRequest.getUsername(),
+                            loginRequest.getPassword()));
+
             SecurityContextHolder.getContext().setAuthentication(authentication);
             String jwt = jwtUtils.generateJwtToken(authentication);
-            
+
             UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-            
+
             log.info("User {} successfully signed in", userDetails.getUsername());
-            return ResponseEntity.ok(new JwtResponse(jwt, 
-                userDetails.getUsername(), 
-                userDetails.getEmail()));
-                
+            return ResponseEntity.ok(new JwtResponse(
+                    jwt,
+                    userDetails.getUsername(),
+                    userDetails.getEmail()
+            ));
+
         } catch (Exception e) {
             log.warn("Signin failed for user: {}", loginRequest.getUsername(), e);
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials");
@@ -72,36 +74,36 @@ public class AuthController {
     @PostMapping("/signup")
     public ResponseEntity<MessageResponse> registerUser(@RequestBody SignupRequest signupRequest) {
         log.debug("User registration attempt: {}", signupRequest.getUsername());
-        
+
         if (userRepository.existsByName(signupRequest.getUsername())) {
             log.warn("Username already exists: {}", signupRequest.getUsername());
             return ResponseEntity.badRequest()
-                .body(new MessageResponse("Error: Username already exists"));
+                    .body(new MessageResponse("Error: Username already exists"));
         }
 
         if (userRepository.existsByEmail(signupRequest.getEmail())) {
             log.warn("Email already exists: {}", signupRequest.getEmail());
             return ResponseEntity.badRequest()
-                .body(new MessageResponse("Error: Email already exists"));
+                    .body(new MessageResponse("Error: Email already exists"));
         }
-        
+
         try {
             User user = new User(
-                signupRequest.getUsername(),
-                passwordEncoder.encode(signupRequest.getPassword()),
-                signupRequest.getEmail()
+                    signupRequest.getUsername(),
+                    passwordEncoder.encode(signupRequest.getPassword()),
+                    signupRequest.getEmail()
             );
-            
+
             userRepository.save(user);
             log.info("User {} successfully registered", signupRequest.getUsername());
-            
+
             return ResponseEntity.status(HttpStatus.CREATED)
-                .body(new MessageResponse("User registered successfully"));
-                
+                    .body(new MessageResponse("User registered successfully"));
+
         } catch (Exception e) {
             log.error("Failed to register user: {}", signupRequest.getUsername(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new MessageResponse("Registration failed"));
+                    .body(new MessageResponse("Registration failed"));
         }
     }
 }
