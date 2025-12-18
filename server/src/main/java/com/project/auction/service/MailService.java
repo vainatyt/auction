@@ -1,22 +1,139 @@
 package com.project.auction.service;
 
-import java.math.BigDecimal;
+import org.springframework.data.domain.Pageable;
+
+import java.util.List;
+
+import org.hibernate.service.spi.ServiceException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataAccessException;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
+
+import com.project.auction.controller.LotController;
+import com.project.auction.models.Mail;
+import com.project.auction.models.User;
+import com.project.auction.pojo.LotResponse;
+import com.project.auction.repository.MailRepository;
+
+import jakarta.transaction.Transactional;
 
 @Service
 public class MailService {
-    private final EmailSender emailSender;
+    private static final Logger log = LoggerFactory.getLogger(LotController.class);
+    private final MailRepository mailRepository;
     
-    public MailService(EmailSender emailSender) {
-        this.emailSender = emailSender;
+    public MailService(MailRepository mailRepository) {
+        this.mailRepository = mailRepository;
     }
     
-    public void sendLotFinishedMail(String to, Long lotId, BigDecimal finalPrice, boolean isOwner) {
-        String subject = "Лот " + lotId + " завершён";
-        String text = isOwner ? 
-            "Ваш лот " + lotId + " завершён. Финальная цена: " + finalPrice + "." :
-            "Отслеживаемый вами лот " + lotId + " завершён. Финальная цена: " + finalPrice + ".";
+    public Page<Mail> getMails(Long userId, Pageable pageable){
+        try{
+            return mailRepository.findByUserId(userId, pageable);
+        } catch (DataAccessException e) {
+            log.error("Database error get mails for userId: {}", userId, e);
+            throw new ServiceException("Failed to fetch mails", e);
+        } catch (IllegalArgumentException e) {
+            log.error("Invalid pageable: {}", pageable, e);
+            throw new IllegalArgumentException("Invalid pagination parameters", e);
+        }
+    }
+
+    @Transactional
+    public void createMail(Mail mail) {
+        validateMail(mail);
+        mailRepository.save(mail);
+    }
+
+    @Transactional
+    public void notifyOwner(User owner, User buyer, LotResponse lotResponse){
+        if (owner == null || buyer == null || lotResponse == null) {
+            throw new IllegalArgumentException("Owner, buyer and lot response cannot be null");
+        }
         
-        emailSender.send(to, subject, text);
+        String message = String.format(
+            "User %s purchased your lot \"%s\" for %.2f. To contact %s, write to: %s",
+            buyer.getName(),
+            lotResponse.getName(),
+            lotResponse.getCurrentCost(),
+            buyer.getName(),
+            buyer.getEmail()
+        );
+        Mail mail = new Mail(message,"Purchase notification",owner.getId());
+        createMail(mail);
     }
+
+    @Transactional
+    public void notifyBuyer(User owner, User buyer, LotResponse lotResponse) {
+        if (owner == null || buyer == null || lotResponse == null) {
+            throw new IllegalArgumentException("Owner, buyer and lot response cannot be null");
+        }
+        
+        if (buyer.getId() == null) {
+            throw new IllegalArgumentException("Buyer ID is required");
+        }
+        
+        String message = String.format(
+            "Congratulations! You purchased lot \"%s\" for %.2f from seller %s. " +
+            "Contact seller by email: %s",
+            lotResponse.getName(),
+            lotResponse.getCurrentCost(),
+            owner.getName(),
+            owner.getEmail()
+        );
+        
+        Mail mail = new Mail( message, "Purchase confirmation", buyer.getId());
+        createMail(mail);
+    }
+
+    @Transactional
+    public void notifyTrack(List<User> users, LotResponse lotResponse){
+        if (lotResponse == null) {
+            throw new IllegalArgumentException("lot response cannot be null");
+        }
+        for (User user: users){
+            if (user == null) {
+                log.warn("user is null, can not notify");
+                continue;
+            }
+        
+            String message = String.format(
+                "Auction completed!\n\n" +
+                "The lot \"%s\" you were tracking has ended.\n\n" +
+                "Final price: %.2f\n",
+                lotResponse.getName(),
+                lotResponse.getCurrentCost()
+            );
+            Mail mail = new Mail( message, "Tracked auction completed", user.getId());
+            createMail(mail);
+        }
+    }
+
+    private void validateMail(Mail mail) {
+        if (mail == null) {
+            throw new IllegalArgumentException("Mail cannot be null");
+        }
+        
+        if (mail.getUserId() == null) {
+            throw new IllegalArgumentException("userId is required");
+        }
+        
+        if (mail.getTitle() == null || mail.getTitle().trim().isEmpty()) {
+            throw new IllegalArgumentException("title is required");
+        }
+        
+        if (mail.getMessage() == null || mail.getMessage().trim().isEmpty()) {
+            throw new IllegalArgumentException("message is required");
+        }
+
+        if (mail.getTitle().length() > 255) {
+            throw new IllegalArgumentException("Title too long (max 255 chars)");
+        }
+        
+        if (mail.getMessage().length() > 5000) {
+            throw new IllegalArgumentException("Message too long (max 5000 chars)");
+        }
+    }
+
 }

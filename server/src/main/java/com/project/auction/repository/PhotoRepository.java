@@ -13,5 +13,5 @@ public interface PhotoRepository extends JpaRepository<Photo, Long> {
     @Query("SELECT p.uuid FROM Photo p WHERE p.lotId = :lotId")
     UUID findUuidByLotId(@Param("lotId") Long lotId);
 
-    Photo findByLotId(Long lotId);
+    Photo findByLotId(Long lotId);  
 }
