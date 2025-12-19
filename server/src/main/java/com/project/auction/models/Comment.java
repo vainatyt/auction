@@ -17,7 +17,7 @@ public class Comment {
     private Integer rating;
     @Column(name = "review")
     private String review;
-    @Column(name = "data")
+    @Column(name = "date")
     private LocalDateTime date;
 
     public Comment() {

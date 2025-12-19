@@ -76,8 +76,12 @@ public class MailService {
 
     @Transactional
     public void notifyOwner(User owner, User buyer, LotResponse lotResponse){
-        if (owner == null || buyer == null || lotResponse == null) {
-            throw new IllegalArgumentException("Owner, buyer and lot response cannot be null");
+        if (owner == null || lotResponse == null) {
+            throw new IllegalArgumentException("Owner and lot response cannot be null");
+        }
+        if(buyer==null){
+            buyer = new User();
+            buyer.setName("no one");
         }
         
         String message = String.format(
@@ -101,14 +105,16 @@ public class MailService {
         if (buyer.getId() == null) {
             throw new IllegalArgumentException("Buyer ID is required");
         }
-        
+        String link = "http://localhost:3000/comment/write/" + owner.getId();
         String message = String.format(
             "Congratulations! You purchased lot \"%s\" for %.2f from seller %s. " +
-            "Contact seller by email: %s",
+            "Contact seller by email: %s.\n" +
+            "Write comment for them %s",
             lotResponse.getName(),
             lotResponse.getCurrentCost(),
             owner.getName(),
-            owner.getEmail()
+            owner.getEmail(),
+            link
         );
         
         Mail mail = new Mail( message, "Purchase confirmation", buyer.getId());

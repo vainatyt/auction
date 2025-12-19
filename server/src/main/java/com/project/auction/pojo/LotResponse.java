@@ -21,6 +21,8 @@ public class LotResponse {
     private LocalDateTime startAuction;
     private LocalDateTime endAuction;
 
+    private Long ownerId;
+
     private UUID uuid;
     
     public LotResponse() {
@@ -34,6 +36,7 @@ public class LotResponse {
         this.rateStep = lot.getRateStep();
         this.startAuction = lot.getStartAuction();
         this.endAuction = lot.getEndAuction();
+        this.ownerId = lot.getOwnerId();
         this.uuid = uuid;
     }
 
@@ -108,6 +111,14 @@ public class LotResponse {
 
     public void setEndAuction(LocalDateTime endAuction) {
         this.endAuction = endAuction;
+    }
+
+    public Long getOwnerId(){
+        return ownerId;
+    }
+
+    public void setOwnerId(Long ownerId){
+        this.ownerId = ownerId;
     }
 
     public UUID getUuid(){

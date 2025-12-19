@@ -5,6 +5,7 @@ import MainPage from './features/MainPage';
 import { AuthProvider } from './context/AuthContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import LotDetailPage from './features/LotDetailPage';
+import CommentWritePage from './features/CommentWritePage';
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
           <Route path="/" element={<Navigate to="/signup" replace />} />
           <Route path="/signin" element={<SigninPage />} />
           <Route path="/signup" element={<SignupPage />} />
+          <Route path="/comment/write/:userId" element={<CommentWritePage />} />
           
           {/* Защищенный маршрут */}
           <Route 

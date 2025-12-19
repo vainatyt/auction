@@ -2,6 +2,25 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import CloseApi from '../api/CloseApi';
 import { Lot } from '../types/Lot';
+import Pagination from '../components/Pagination';
+
+interface Comment {
+  id: {
+    commentatorId: number;
+    addresseeId: number;
+  };
+  rating: number;
+  review: string;
+  date: string;
+}
+
+interface CommentsPage {
+  content: Comment[];
+  number: number;
+  totalPages: number;
+  totalElements: number;
+  size: number;
+}
 
 const LotDetailPage: React.FC = () => {
   const { lotId } = useParams<{ lotId: string }>();
@@ -13,6 +32,9 @@ const LotDetailPage: React.FC = () => {
   const [minBid, setMinBid] = useState(0);
   const [buyLoading, setBuyLoading] = useState(false);
   const [auctionEnded, setAuctionEnded] = useState(false);
+  
+  const [commentsPage, setCommentsPage] = useState<CommentsPage | null>(null);
+  const [commentsCurrentPage, setCommentsCurrentPage] = useState(0);
 
   const imgRef = useRef<HTMLImageElement>(null);
 
@@ -22,11 +44,9 @@ const LotDetailPage: React.FC = () => {
         .then((response) => {
           const data = response.data;
           setLot(data);
-          
           const min = (data.currentCost || 0) + (data.rateStep || 0);
           setMinBid(min);
           setBidAmount(min.toString());
-          
           setAuctionEnded(new Date(data.endAuction || 0) < new Date());
         })
         .catch(console.error)
@@ -36,24 +56,34 @@ const LotDetailPage: React.FC = () => {
 
   useEffect(() => {
     if (!lot?.uuid || !imgRef.current) return;
-    
     setImageLoading(true);
     const img = imgRef.current;
-    
-    CloseApi.get(`/users_lots_photo/${lot.uuid}`, {
-      responseType: 'blob'
-    })
-    .then(res => {
-      const url = URL.createObjectURL(res.data);
-      img.src = url;
-      img.style.display = 'block';
-    })
-    .catch(err => {
-      console.error('Фото ошибка:', err);
-      img.style.display = 'none';
-    })
-    .finally(() => setImageLoading(false));
+    CloseApi.get(`/users_lots_photo/${lot.uuid}`, { responseType: 'blob' })
+      .then(res => {
+        const url = URL.createObjectURL(res.data);
+        img.src = url;
+        img.style.display = 'block';
+      })
+      .catch(err => {
+        console.error('Фото ошибка:', err);
+        img.style.display = 'none';
+      })
+      .finally(() => setImageLoading(false));
   }, [lot?.uuid]);
+
+  useEffect(() => {
+    if (lot?.ownerId) {
+      CloseApi.get(`/comments/getmy?page=${commentsCurrentPage}&size=5&userId=${lot.ownerId}`)
+        .then((response) => {
+          setCommentsPage(response.data);
+        })
+        .catch(console.error);
+    }
+  }, [lot?.ownerId, commentsCurrentPage]);
+
+  const handleCommentsPageChange = (page: number) => {
+    setCommentsCurrentPage(page);
+  };
 
   const handlePin = async () => {
     try {
@@ -70,31 +100,20 @@ const LotDetailPage: React.FC = () => {
 
   const handleBuy = async () => {
     if (!lotId || !bidAmount) return;
-    
     const amount = parseFloat(bidAmount);
-    
     if (isNaN(amount) || amount < minBid) {
       alert(`Минимальная ставка: ₽${minBid.toLocaleString('ru-RU')}`);
       return;
     }
-    
     if (auctionEnded) {
       alert('Аукцион завершён!');
       return;
     }
-
     setBuyLoading(true);
     try {
-      await CloseApi.post(`/lots/buy`, { 
-        lotId,
-        reqCost: amount 
-      });
-      
+      await CloseApi.post(`/lots/buy`, { lotId, reqCost: amount });
       alert(`✅ Ставка ${amount.toLocaleString('ru-RU')}₽ принята!`);
-      
-      // ✅ ПЕРЕЗАГРУЗКА СТРАНИЦЫ - все данные обновятся
       window.location.reload();
-      
     } catch (error: any) {
       if (error.response?.data?.error === 'AUCTION_EXPIRED') {
         alert('❌ Аукцион завершён!');
@@ -156,13 +175,8 @@ const LotDetailPage: React.FC = () => {
             </div>
             <div className="stat">
               <span className="text-gray-500">Конец аукциона</span>
-              <div className={`text-xl font-semibold ${
-                auctionEnded ? 'text-red-500' : 'text-blue-600'
-              }`}>
-                {lot.endAuction 
-                  ? new Date(lot.endAuction).toLocaleString('ru-RU') 
-                  : 'Не указана'
-                }
+              <div className={`text-xl font-semibold ${auctionEnded ? 'text-red-500' : 'text-blue-600'}`}>
+                {lot.endAuction ? new Date(lot.endAuction).toLocaleString('ru-RU') : 'Не указана'}
               </div>
             </div>
           </div>
@@ -178,12 +192,9 @@ const LotDetailPage: React.FC = () => {
               <span className="w-2 h-2 bg-green-400 rounded-full mr-2"></span>
               Сделать ставку
             </h3>
-            
             <div className="space-y-3">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Сумма ставки (₽)
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Сумма ставки (₽)</label>
                 <input
                   type="number"
                   value={bidAmount}
@@ -195,12 +206,9 @@ const LotDetailPage: React.FC = () => {
                   disabled={auctionEnded || buyLoading}
                 />
                 {bidAmount && parseFloat(bidAmount) < minBid && (
-                  <p className="text-red-500 text-xs mt-1">
-                    Минимум: ₽{minBid.toLocaleString('ru-RU')}
-                  </p>
+                  <p className="text-red-500 text-xs mt-1">Минимум: ₽{minBid.toLocaleString('ru-RU')}</p>
                 )}
               </div>
-              
               <div className="text-xs text-gray-500">
                 Текущая цена: ₽{(lot.currentCost || 0).toLocaleString('ru-RU')} + шаг ₽{(lot.rateStep || 0).toLocaleString('ru-RU')}
               </div>
@@ -212,15 +220,12 @@ const LotDetailPage: React.FC = () => {
             <button 
               onClick={handlePin}
               className={`px-6 py-3 rounded-lg font-medium transition-all ${
-                pinned 
-                  ? 'bg-yellow-500 text-white shadow-lg' 
-                  : 'bg-gray-200 hover:bg-gray-300'
+                pinned ? 'bg-yellow-500 text-white shadow-lg' : 'bg-gray-200 hover:bg-gray-300'
               }`}
               disabled={buyLoading}
             >
               {pinned ? '✅ Закреплено' : '📌 Закрепить'}
             </button>
-            
             <button 
               onClick={handleBuy}
               disabled={auctionEnded || buyLoading || parseFloat(bidAmount || '0') < minBid}
@@ -242,6 +247,62 @@ const LotDetailPage: React.FC = () => {
             </button>
           </div>
         </div>
+      </div>
+
+      {/* ✅ ОТЗЫВЫ С ПАГИНАЦИЕЙ */}
+      <div className="mt-12">
+        <h3 className="text-2xl font-bold mb-8 text-center text-gray-800">
+          Отзывы об владельце
+        </h3>
+        
+        {commentsPage ? (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 max-h-96 overflow-y-auto p-4">
+              {commentsPage.content.map((comment, index) => (
+                <div key={`${comment.id.commentatorId}-${index}`} className="comment bg-white p-6 rounded-xl shadow-lg border border-gray-100 hover:shadow-xl transition-all">
+                  <div className="flex items-start space-x-4 mb-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="font-semibold text-gray-900 truncate">
+                          Пользователь #{comment.id.commentatorId}
+                        </span>
+                        <span className="text-xs text-gray-400">
+                          {comment.date ? new Date(comment.date).toLocaleDateString('ru-RU') : 'Недавно'}
+                        </span>
+                      </div>
+                      <div className="flex flex-col items-start gap-2"> 
+                      <div className="flex flex-col items-start gap-2">
+                        <label className="text-sm font-semibold text-gray-700">Оценка</label>
+                        <div className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg">
+                          <span className="text-lg font-bold text-yellow-500">{comment.rating}/5</span>
+                        </div>
+                      </div>
+                    </div>
+                    </div>
+                  </div>
+                  <p className="text-gray-700 leading-relaxed">{comment.review || '—'}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* ✅ ТВОЯ ПАГИНАЦИЯ */}
+            {commentsPage.totalPages > 1 && (
+              <Pagination
+                currentPage={commentsCurrentPage}
+                totalPages={commentsPage.totalPages}
+                totalElements={commentsPage.totalElements}
+                pageSize={commentsPage.size}
+                onPageChange={handleCommentsPageChange}
+                lotsPage={commentsPage}
+              />
+            )}
+          </>
+        ) : (
+          <div className="text-center py-12 text-gray-500">
+            <div className="text-4xl mb-4">💭</div>
+            <p>Отзывов пока нет</p>
+          </div>
+        )}
       </div>
     </div>
   );

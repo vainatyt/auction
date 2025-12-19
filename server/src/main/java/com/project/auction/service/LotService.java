@@ -113,19 +113,23 @@ public class LotService {
                 log.warn("User not found: id={}", lot.getOwnerId());
                 return new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found");
             });
-        User buyer = userRepository.findById(lot.getBuyerId())
+        User buyer = null;
+        if(lot.getBuyerId()!=null){
+            buyer = userRepository.findById(lot.getBuyerId())
             .orElseThrow(() -> {
                 log.warn("User not found: id={}", lot.getBuyerId());
                 return new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found");
             });
-
+        }
         LotResponse lotResponse = findLotWithMetadataById(lot.getId());
         // Уведомляем продавца
         mailService.notifyOwner(owner, buyer, lotResponse);
         log.info("notify owner={} lot={}",owner.getId(),lot.getId());
         // Уведомляем покупателя
-        mailService.notifyBuyer(owner, buyer, lotResponse);
-        log.info("notify buyer={} lot={}",buyer.getId(),lot.getId());
+        if(buyer!=null){
+            mailService.notifyBuyer(owner, buyer, lotResponse);
+            log.info("notify buyer={} lot={}",buyer.getId(),lot.getId());
+        }
         // Уведомляем трекеров
         List<TrackableItem> trackers = trackableItemRepository.findByIdLotId(lotId);
         List<Long> userIds = trackers.stream()
@@ -195,8 +199,9 @@ public class LotService {
                 log.warn("Meta data of lot not found: id={}", id);
                 return new IllegalArgumentException("Meta data of lot not found: " + id);
             });
-        return new LotResponse(lot, meta, photoRepository.findUuidByLotId(id));
-            
+        LotResponse lotResponse = new LotResponse(lot, meta, photoRepository.findUuidByLotId(id));
+        lotResponse.setOwnerId(lot.getOwnerId());
+        return lotResponse;
     }
 
     @Transactional
