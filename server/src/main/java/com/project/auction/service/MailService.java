@@ -13,7 +13,9 @@ import org.springframework.stereotype.Service;
 
 import com.project.auction.controller.LotController;
 import com.project.auction.models.Mail;
+import com.project.auction.models.MetaDataLot;
 import com.project.auction.models.User;
+import com.project.auction.pojo.BuyStatus;
 import com.project.auction.pojo.LotResponse;
 import com.project.auction.repository.MailRepository;
 
@@ -44,6 +46,32 @@ public class MailService {
     public void createMail(Mail mail) {
         validateMail(mail);
         mailRepository.save(mail);
+    }
+
+    public void notifyBuyReq(User user, MetaDataLot metaDataLot, BuyStatus status) {
+        if (user == null) {
+            throw new IllegalArgumentException("user cannot be null");
+        }
+        String message;
+        switch (status) {
+            case PROCESSED:
+                message = String.format(
+                    "Your price change request for \"%s\"  has been SUCCESSFULLY PROCESSED!",
+                    metaDataLot.getName()
+                );
+                break;
+            case REJECTED:
+                message = String.format(
+                    "Your price change request for \"%s\" was REJECTED. Please check the price or auction status.",
+                    metaDataLot.getName()
+                );
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown status: " + status);
+        }
+        
+        Mail mail = new Mail(message, "Price change request status: " + status.name(), user.getId());
+        createMail(mail);
     }
 
     @Transactional
