@@ -23,11 +23,11 @@ const LotDetailPage: React.FC = () => {
           const data = response.data;
           setLot(data);
           
-          const min = data.currentCost + data.rateStep;
+          const min = (data.currentCost || 0) + (data.rateStep || 0);
           setMinBid(min);
           setBidAmount(min.toString());
           
-          setAuctionEnded(new Date(data.endAuction) < new Date());
+          setAuctionEnded(new Date(data.endAuction || 0) < new Date());
         })
         .catch(console.error)
         .finally(() => setLoading(false));
@@ -69,12 +69,12 @@ const LotDetailPage: React.FC = () => {
   };
 
   const handleBuy = async () => {
-    if (!lot || !bidAmount) return;
+    if (!lotId || !bidAmount) return;
     
     const amount = parseFloat(bidAmount);
     
     if (isNaN(amount) || amount < minBid) {
-      alert(`Минимальная ставка: ₽${minBid}`);
+      alert(`Минимальная ставка: ₽${minBid.toLocaleString('ru-RU')}`);
       return;
     }
     
@@ -85,18 +85,16 @@ const LotDetailPage: React.FC = () => {
 
     setBuyLoading(true);
     try {
-      const response = await CloseApi.post(`/lots/buy`, { 
+      await CloseApi.post(`/lots/buy`, { 
         lotId,
         reqCost: amount 
       });
       
-      setLot(response.data);
+      alert(`✅ Ставка ${amount.toLocaleString('ru-RU')}₽ принята!`);
       
-      const newMin = response.data.currentCost + response.data.rateStep;
-      setMinBid(newMin);
-      setBidAmount(newMin.toString());
+      // ✅ ПЕРЕЗАГРУЗКА СТРАНИЦЫ - все данные обновятся
+      window.location.reload();
       
-      alert(`✅ Ставка ${amount}₽ принята! Новая цена: ₽${response.data.currentCost}`);
     } catch (error: any) {
       if (error.response?.data?.error === 'AUCTION_EXPIRED') {
         alert('❌ Аукцион завершён!');
@@ -153,7 +151,7 @@ const LotDetailPage: React.FC = () => {
             <div className="stat">
               <span className="text-gray-500">Текущая ставка</span>
               <div className="text-2xl font-bold text-green-600">
-                ₽{lot.currentCost.toLocaleString()}
+                ₽{(lot.currentCost || 0).toLocaleString('ru-RU')}
               </div>
             </div>
             <div className="stat">
@@ -161,14 +159,17 @@ const LotDetailPage: React.FC = () => {
               <div className={`text-xl font-semibold ${
                 auctionEnded ? 'text-red-500' : 'text-blue-600'
               }`}>
-                {new Date(lot.endAuction).toLocaleString()}
+                {lot.endAuction 
+                  ? new Date(lot.endAuction).toLocaleString('ru-RU') 
+                  : 'Не указана'
+                }
               </div>
             </div>
           </div>
 
           <div className="description p-4 bg-gray-50 rounded-lg">
             <h3 className="font-semibold mb-2">Описание</h3>
-            <p>{lot.description}</p>
+            <p>{lot.description || 'Описание отсутствует'}</p>
           </div>
 
           {/* Форма ставки */}
@@ -190,18 +191,18 @@ const LotDetailPage: React.FC = () => {
                   min={minBid}
                   step="0.01"
                   className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder={minBid.toString()}
+                  placeholder={minBid.toLocaleString('ru-RU')}
                   disabled={auctionEnded || buyLoading}
                 />
                 {bidAmount && parseFloat(bidAmount) < minBid && (
                   <p className="text-red-500 text-xs mt-1">
-                    Минимум: ₽{minBid.toLocaleString()}
+                    Минимум: ₽{minBid.toLocaleString('ru-RU')}
                   </p>
                 )}
               </div>
               
               <div className="text-xs text-gray-500">
-                Текущая цена: ₽{lot.currentCost.toLocaleString()} + шаг ₽{lot.rateStep.toLocaleString()}
+                Текущая цена: ₽{(lot.currentCost || 0).toLocaleString('ru-RU')} + шаг ₽{(lot.rateStep || 0).toLocaleString('ru-RU')}
               </div>
             </div>
           </div>
@@ -236,7 +237,7 @@ const LotDetailPage: React.FC = () => {
               ) : auctionEnded ? (
                 '❌ Аукцион завершён'
               ) : (
-                `💰 Сделать ставку ₽${parseFloat(bidAmount || '0').toLocaleString()}`
+                `💰 Сделать ставку ₽${parseFloat(bidAmount || '0').toLocaleString('ru-RU')}`
               )}
             </button>
           </div>
