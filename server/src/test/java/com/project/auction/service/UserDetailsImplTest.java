@@ -1,9 +1,16 @@
 package com.project.auction.service;
 
 import com.project.auction.models.User;
+
+
 import org.junit.jupiter.api.Test;
+<<<<<<< HEAD
+=======
+import org.mockito.Mock;
+>>>>>>> e9f7391f028d91fe8ecc049c65882f9faffe2704
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -11,8 +18,13 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.when;
 class UserDetailsImplTest {
 
+    @Mock
+    private UserDetails userDetails;
+    
     @Test
     void build_createsUserDetails_fromUser() {
         // given

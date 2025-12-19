@@ -34,31 +34,31 @@ class ImageServiceTest {
     private ImageService imageService;
 
     @Test
-    void savePhoto_validImage_returnsSavedPhoto() throws Exception {
-        // given
-        byte[] imageContent = "test image data".getBytes();
-        MockMultipartFile image = new MockMultipartFile(
-            "image",                    // name
-            "test.jpg",                 // originalFilename  
-            "image/jpeg",               // contentType
-            imageContent                // byte[] content
-        );
-        Long lotId = 1L;
+void savePhoto_validImage_returnsSavedPhoto() throws Exception {
+    // КРИТИЧЕСКИ ВАЖНО: установить uploadDir ПРЯМО В ТЕСТЕ
+    ReflectionTestUtils.setField(imageService, "uploadDir", "target/test-uploads/");
+    
+    // given
+    byte[] imageContent = "test image data".getBytes();
+    MockMultipartFile image = new MockMultipartFile(
+        "image", "test.jpg", "image/jpeg", imageContent
+    );
+    Long lotId = 1L;
 
-        Photo savedPhoto = new Photo();
-        savedPhoto.setLotId(lotId);
-        savedPhoto.setUuid(UUID.randomUUID());
+    Photo savedPhoto = new Photo();
+    savedPhoto.setLotId(lotId);
+    savedPhoto.setUuid(UUID.randomUUID());
 
-        when(photoRepository.save(any(Photo.class))).thenReturn(savedPhoto);
+    when(photoRepository.save(any(Photo.class))).thenReturn(savedPhoto);
 
-        // when
-        Photo result = imageService.savePhoto(lotId, image);
+    // when
+    Photo result = imageService.savePhoto(lotId, image);
 
-        // then
-        assertThat(result).isNotNull();
-        assertThat(result.getLotId()).isEqualTo(lotId);
-        verify(photoRepository).save(any(Photo.class));
-    }
+    // then
+    assertThat(result).isNotNull();
+    assertThat(result.getLotId()).isEqualTo(lotId);
+    verify(photoRepository).save(any(Photo.class));
+}
 
     @Test
     void savePhoto_nullImage_returnsNull() {
@@ -92,7 +92,8 @@ class ImageServiceTest {
     @Test
     void savePhoto_invalidFormat_throwsException() {
         byte[] imageContent = "test image data".getBytes();
-        MockMultipartFile invalidImage = new MockMultipartFile("name", "filename.jpg", "image/jpeg", imageContent);
+        MockMultipartFile invalidImage = new MockMultipartFile("image", "test.txt", "text/plain", imageContent);
+
 
         assertThatThrownBy(() -> imageService.savePhoto(1L, invalidImage))
             .isInstanceOf(IllegalArgumentException.class)

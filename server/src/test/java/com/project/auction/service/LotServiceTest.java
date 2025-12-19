@@ -21,8 +21,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
@@ -37,10 +36,7 @@ class LotServiceTest {
     @Mock private MailService mailService;
     @Mock private ImageService imageService;
 
-    @InjectMocks
-    private LotService lotService;
-
-    // ---------- createLot ----------
+    @InjectMocks private LotService lotService;
 
     @Test
     void createLot_successful_returnsLot() {
@@ -51,8 +47,7 @@ class LotServiceTest {
         request.setCurrentCost(BigDecimal.valueOf(1000));
         request.setRateStep(BigDecimal.valueOf(50));
 
-        MockMultipartFile image =
-                new MockMultipartFile("image", "test.jpg", "image/jpeg", "data".getBytes());
+        MockMultipartFile image = new MockMultipartFile("image", "test.jpg", "image/jpeg", "data".getBytes());
 
         Lot savedLot = new Lot();
         savedLot.setId(1L);
@@ -71,68 +66,60 @@ class LotServiceTest {
         verify(imageService).savePhoto(eq(1L), eq(image));
     }
 
-    // ---------- findUserLotsWithMetadata ----------
+@Test
+void findUserLotsWithMetadata_returnsPage() {
+    Long ownerId = 10L;
+    PageRequest pageable = PageRequest.of(0, 10);
 
-    @Test
-    void findUserLotsWithMetadata_returnsPage() {
-        Long ownerId = 10L;
-        PageRequest pageable = PageRequest.of(0, 10);
+    List<Object[]> content = List.of(
+        new Object[]{
+            "Phone",                    // 0: m.name (String)
+            "iPhone 14",                // 1: m.description (String)
+            new BigDecimal("10.00"),    // 2: l.current_cost (BigDecimal)
+            new BigDecimal("1.00"),     // 3: l.rate_step (BigDecimal)
+            LocalDateTime.now(),        // 4: l.start_auction
+            LocalDateTime.now().plusDays(1), // 5: l.end_auction
+            1L,                         // 6: l.id_lot (Long)
+            UUID.randomUUID()           // 7: p.uuid (UUID)
+        },
+        new Object[]{
+            "TV", "Samsung", new BigDecimal("500.00"), new BigDecimal("25.00"),
+            LocalDateTime.now(), LocalDateTime.now().plusDays(1), 2L, UUID.randomUUID()
+        }
+    );
+    Page<Object[]> rawPage = new PageImpl<>(content, pageable, 2);
 
-        List<Object> content = List.of(
-                new Object[]{
-                        "Phone",                      // 0 name
-                        "iPhone",                     // 1 description
-                        BigDecimal.TEN,               // 2 currentCost
-                        BigDecimal.ONE,               // 3 rateStep
-                        LocalDateTime.now(),          // 4 startDate
-                        LocalDateTime.now().plusDays(1), // 5 endDate
-                        1L,                           // 6 biddersCount
-                        UUID.randomUUID()             // 7 photoUuid
-                }
-        );
+    when(lotRepository.findUserLotsWithMetadata(ownerId, pageable)).thenReturn(rawPage);
 
-        Page<Object> rawPage = new PageImpl<>(content, pageable, content.size());
-        when(lotRepository.findUserLotsWithMetadata(ownerId, pageable));
+    Page<LotResponse> result = lotService.findUserLotsWithMetadata(ownerId, pageable);
 
-        Page<LotResponse> result = lotService.findUserLotsWithMetadata(ownerId, pageable);
+    assertThat(result.getContent()).hasSize(2);
+    verify(lotRepository).findUserLotsWithMetadata(ownerId, pageable);
+}
 
-        assertThat(result.getContent()).hasSize(1);
-        LotResponse lot = result.getContent().get(0);
-        assertThat(lot.getName()).isEqualTo("Phone");
-        assertThat(lot.getDescription()).isEqualTo("iPhone");
-    }
+@Test
+void findLotsWithMetadata_returnsPage() {
+    PageRequest pageable = PageRequest.of(0, 10);
 
-    // ---------- findLotsWithMetadata ----------
+    List<Object[]> content = List.of(
+        new Object[]{
+            "TV", "Samsung", new BigDecimal("500.00"), new BigDecimal("25.00"),
+            LocalDateTime.now(), LocalDateTime.now().plusDays(1), 2L, UUID.randomUUID()
+        },
+        new Object[]{
+            "Phone", "iPhone 14", new BigDecimal("10.00"), new BigDecimal("1.00"),
+            LocalDateTime.now(), LocalDateTime.now().plusDays(1), 1L, UUID.randomUUID()
+        }
+    );
+    Page<Object[]> rawPage = new PageImpl<>(content, pageable, 2);
 
-    @Test
-    void findLotsWithMetadata_returnsPage() {
-        PageRequest pageable = PageRequest.of(0, 10);
+    when(lotRepository.findLotsWithMetadata(pageable)).thenReturn(rawPage);
 
-        List<Object> content = List.of(
-                new Object[]{
-                        "TV",                         // 0
-                        "Samsung",                    // 1
-                        BigDecimal.valueOf(500),      // 2
-                        BigDecimal.valueOf(25),       // 3
-                        LocalDateTime.now(),          // 4
-                        LocalDateTime.now().plusDays(1), // 5
-                        2L,                           // 6
-                        UUID.randomUUID()             // 7
-                }
-        );
+    Page<LotResponse> result = lotService.findLotsWithMetadata(pageable);
 
-        Page<Object> rawPage = new PageImpl<>(content, pageable, content.size());
-        when(lotRepository.findLotsWithMetadata(pageable));
-
-        Page<LotResponse> result = lotService.findLotsWithMetadata(pageable);
-
-        assertThat(result.getContent()).hasSize(1);
-        LotResponse lr = result.getContent().get(0);
-        assertThat(lr.getName()).isEqualTo("TV");
-        assertThat(lr.getDescription()).isEqualTo("Samsung");
-    }
-
-    // ---------- findLotWithMetadataById ----------
+    assertThat(result.getContent()).hasSize(2);
+    verify(lotRepository).findLotsWithMetadata(pageable);
+}
 
     @Test
     void findLotWithMetadataById_found_returnsLotResponse() {
@@ -164,10 +151,8 @@ class LotServiceTest {
         when(lotRepository.findById(lotId)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> lotService.findLotWithMetadataById(lotId))
-                .isInstanceOf(IllegalArgumentException.class);
+            .isInstanceOf(IllegalArgumentException.class);
     }
-
-    // ---------- buyLot ----------
 
     @Test
     void buyLot_validBid_updatesLot() {
@@ -195,7 +180,7 @@ class LotServiceTest {
         Long buyerId = 20L;
         BuyLotRequest request = new BuyLotRequest();
         request.setLotId(1L);
-        request.setReqCost(BigDecimal.valueOf(140)); // меньше 100 + 50
+        request.setReqCost(BigDecimal.valueOf(140));
 
         Lot lot = new Lot();
         lot.setId(1L);
@@ -205,7 +190,7 @@ class LotServiceTest {
         when(lotRepository.findById(1L)).thenReturn(Optional.of(lot));
 
         assertThatThrownBy(() -> lotService.buyLot(buyerId, request))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("Bid must be at least");
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining("Bid must be at least");
     }
 }
