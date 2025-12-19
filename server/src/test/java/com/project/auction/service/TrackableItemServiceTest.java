@@ -174,19 +174,28 @@ class TrackableItemServiceTest {
     // ---------- getTrackedLots ----------
 
     @Test
-    void getTrackedLots_mapsPageCorrectly() {
+        void getTrackedLots_mapsPageCorrectly() {
         Long userId = 1L;
         PageRequest pageable = PageRequest.of(0, 10);
 
         User user = new User();
         user.setId(userId);
-
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
 
-        List<Object> content = List.of(
-                new Object[]{
+        List<Object[]> content = List.of(
+                new Object[] {
                         "Phone",                      // 0 name
                         "iPhone",                     // 1 description
+                        BigDecimal.TEN,               // 2 currentPrice
+                        BigDecimal.ONE,               // 3 startPrice
+                        LocalDateTime.now(),          // 4 startDate
+                        LocalDateTime.now().plusDays(1), // 5 endDate
+                        1L,                           // 6 biddersCount
+                        UUID.randomUUID()             // 7 lotUuid
+                },
+                new Object[] {
+                        "Phone",                      // 0 name
+                        "Android",                     // 1 description
                         BigDecimal.TEN,               // 2 currentPrice
                         BigDecimal.ONE,               // 3 startPrice
                         LocalDateTime.now(),          // 4 startDate
@@ -196,17 +205,23 @@ class TrackableItemServiceTest {
                 }
         );
 
-        Page<Object> rawPage = new PageImpl<>(content, pageable, content.size());
-        when(trackableItemRepository.findTrackedLotsByUserId(userId, pageable));
+        Page<Object[]> rawPage = new PageImpl<>(content, pageable, content.size());
+
+        when(trackableItemRepository.findTrackedLotsByUserId(userId, pageable))
+                .thenReturn(rawPage);
 
         Page<LotResponse> result = trackableItemService.getTrackedLots(userId, pageable);
 
-        assertThat(result.getTotalElements()).isEqualTo(1);
-        assertThat(result.getContent()).hasSize(1);
-        LotResponse lot = result.getContent().get(0);
-        assertThat(lot.getName()).isEqualTo("Phone");
-        assertThat(lot.getDescription()).isEqualTo("iPhone");
-    }
+        assertThat(result.getTotalElements()).isEqualTo(2);
+        assertThat(result.getContent()).hasSize(2);
+
+        LotResponse first = result.getContent().get(0);
+        LotResponse second = result.getContent().get(1);
+
+        assertThat(first.getDescription()).isEqualTo("iPhone");
+        assertThat(second.getDescription()).isEqualTo("Android");
+
+        }
 
     @Test
     void getTrackedLots_userNotFound_throwsUnauthorized() {

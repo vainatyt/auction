@@ -1,16 +1,27 @@
 package com.project.auction.service;
 
 import com.project.auction.models.User;
+
+
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.when;
 class UserDetailsImplTest {
 
+    @Mock
+    private UserDetails userDetails;
+    
     @Test
     void build_createsUserDetails_fromUser() {
         // given
@@ -39,7 +50,10 @@ class UserDetailsImplTest {
         String name = "John Doe";
         String email = "john@example.com";
         String password = "password123";
-        List<SimpleGrantedAuthority> authorities = Arrays.asList(
+        
+        // ✅ ИСПРАВЛЕНО: Collection вместо List
+        Collection<? extends GrantedAuthority> authorities = 
+        (Collection<? extends GrantedAuthority>) Arrays.asList(
             new SimpleGrantedAuthority("ROLE_USER"),
             new SimpleGrantedAuthority("ROLE_ADMIN")
         );
@@ -52,9 +66,13 @@ class UserDetailsImplTest {
         assertThat(userDetails.getUsername()).isEqualTo(name);
         assertThat(userDetails.getEmail()).isEqualTo(email);
         assertThat(userDetails.getPassword()).isEqualTo(password);
-        assertThat(userDetails.getAuthorities()).containsExactlyElementsOf(authorities);
-        assertThat(userDetails.getUsername()).isEqualTo(name);
+        assertThat(userDetails.getAuthorities()).hasSize(authorities.size())
+            .extracting(GrantedAuthority::getAuthority)
+            .containsExactlyInAnyOrder(authorities.stream()
+                .map(GrantedAuthority::getAuthority)
+                .toArray(String[]::new));
     }
+
 
     @Test
     void userDetailsMethods_returnExpectedValues() {

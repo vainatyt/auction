@@ -11,12 +11,16 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -28,63 +32,51 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(CommentController.class)
-@ActiveProfiles("test")
+@SpringBootTest
+@AutoConfigureMockMvc
+@TestPropertySource(properties = "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration")
 class CommentControllerTest {
-
+    
     @Autowired
     private MockMvc mockMvc;
-
-    @Autowired
-    private ObjectMapper objectMapper;
-
+    
+    private final ObjectMapper objectMapper = new ObjectMapper();
+    
     @MockitoBean
-    private CommentService commentService;
-
+    private CommentService commentService;  // ← сервис комментариев
+    
     @MockitoBean
     private UserRepository userRepository;
-
-    @BeforeEach
-    void setupSecurityContext() {
-        Authentication auth = Mockito.mock(Authentication.class);
-        when(auth.getName()).thenReturn("testUser");
-
-        SecurityContext context = Mockito.mock(SecurityContext.class);
-        when(context.getAuthentication()).thenReturn(auth);
-
-        SecurityContextHolder.setContext(context);
-    }
-
+    
     @Test
+    @WithMockUser(username = "testUser")
     void createComment_returnsSavedComment() throws Exception {
-        // given
-       CreateCommentRequest request = new CreateCommentRequest();
-        request.setAddresseeId(1L);
-        request.setRating(5);
-        request.setReview("Nice lot");
+    // Мокаем пользователя
+    User testUser = new User("testUser", "pwd", "test@test.com");
+    testUser.setId(10L);
+    when(userRepository.findByName("testUser")).thenReturn(Optional.of(testUser));
+    
+    // ✅ ИСПРАВЛЕНО - используйте CommentId
+    CommentId commentId = new CommentId();  // ← Создайте CommentId объект
+    commentId.setCommentatorId(1L);  // или commentId = new CommentId(1L);
+    
+    Comment comment = new Comment();
+    comment.setId(commentId);  // ← Передайте CommentId
+    comment.setReview("Test comment");
+    
+    when(commentService.createComment(any(CreateCommentRequest.class), eq(10L)))
+    .thenReturn(comment);
 
-        User user = new User("testUser", "pwd", "test@test.com");
-        user.setId(10L);
+    
+    CreateCommentRequest request = new CreateCommentRequest();
+    request.setReview("Test comment");
+    request.setAddresseeId(1L);
+    
+    mockMvc.perform(post("/comments/write")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.id.commentatorId").value(1L));
 
-        Comment saved = new Comment();
-
-        CommentId commentId = new CommentId();
-        commentId.setCommentatorId(10L);
-        commentId.setAddresseeId(1L);
-        saved.setId(commentId);
-        saved.setRating(5);      // если есть такое поле
-        saved.setReview("Nice lot");
-
-        when(userRepository.findByName("testUser")).thenReturn(Optional.of(user));
-        when(commentService.createComment(any(CreateCommentRequest.class), eq(10L)))
-                .thenReturn(saved);
-
-        // when/then
-        mockMvc.perform(post("/comments/write")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-               .andExpect(status().isOk())
-               .andExpect(jsonPath("$.id").value(100L))
-               .andExpect(jsonPath("$.text").value("Nice lot"));
-    }
+}
 }

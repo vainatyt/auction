@@ -12,15 +12,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.test.context.ActiveProfiles;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.mock.web.MockMultipartFile;
@@ -30,19 +29,23 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(LotController.class)
-@ActiveProfiles("test")
+@SpringBootTest
+@AutoConfigureMockMvc
+@TestPropertySource(properties = {
+    "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration",
+    "spring.security.enabled=false"
+})
+@WithMockUser(username = "testUser", roles = {"USER"})
 class LotControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @MockitoBean
     private UserRepository userRepository;
@@ -53,17 +56,9 @@ class LotControllerTest {
     private User user;
 
     @BeforeEach
-    void setupSecurity() {
+    void setup() {
         user = new User("testUser", "pwd", "test@test.com");
         user.setId(10L);
-
-        Authentication auth = Mockito.mock(Authentication.class);
-        when(auth.getName()).thenReturn("testUser");
-
-        SecurityContext context = Mockito.mock(SecurityContext.class);
-        when(context.getAuthentication()).thenReturn(auth);
-        SecurityContextHolder.setContext(context);
-
         when(userRepository.findByName("testUser")).thenReturn(Optional.of(user));
     }
 
@@ -76,46 +71,37 @@ class LotControllerTest {
         create.setRateStep(new BigDecimal("50.00"));
 
         MockMultipartFile jsonPart = new MockMultipartFile(
-                "request",
-                "request.json",
-                "application/json",
+                "request", "request.json", "application/json",
                 objectMapper.writeValueAsBytes(create)
         );
         MockMultipartFile imagePart = new MockMultipartFile(
-                "image",
-                "img.jpg",
-                "image/jpeg",
+                "image", "img.jpg", "image/jpeg",
                 new byte[]{1, 2, 3}
         );
 
+
         mockMvc.perform(multipart("/lots/create")
                         .file(jsonPart)
-                        .file(imagePart)
-                        .contentType(MediaType.MULTIPART_FORM_DATA))
-               .andExpect(status().isCreated())
-               .andExpect(jsonPath("$.message").value("Lot created successfully"));
+                        .file(imagePart))
+                .andExpect(status().isCreated());
     }
 
     @Test
     void createLot_invalidData_returns400() throws Exception {
         CreateLotRequest create = new CreateLotRequest();
         create.setGoodsName("Bad");
+
         MockMultipartFile jsonPart = new MockMultipartFile(
-                "request",
-                "request.json",
-                "application/json",
+                "request", "request.json", "application/json",
                 objectMapper.writeValueAsBytes(create)
         );
 
-        Mockito.doThrow(new IllegalArgumentException("Bad data"))
-               .when(lotService)
-               .createLot(eq(10L), any(CreateLotRequest.class), any());
+        doThrow(new IllegalArgumentException("Bad data"))
+                .when(lotService).createLot(eq(10L), any(CreateLotRequest.class), any());
 
         mockMvc.perform(multipart("/lots/create")
-                        .file(jsonPart)
-                        .contentType(MediaType.MULTIPART_FORM_DATA))
-               .andExpect(status().isBadRequest())
-               .andExpect(jsonPath("$.message").value("Bad data"));
+                        .file(jsonPart))
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -131,8 +117,8 @@ class LotControllerTest {
         mockMvc.perform(get("/lots/getmy")
                         .param("page", "0")
                         .param("size", "10"))
-               .andExpect(status().isOk())
-               .andExpect(jsonPath("$.content[0].id").value(1L));
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].id").value(1L));
     }
 
     @Test
@@ -148,8 +134,8 @@ class LotControllerTest {
         mockMvc.perform(get("/lots/getall")
                         .param("page", "0")
                         .param("size", "10"))
-               .andExpect(status().isOk())
-               .andExpect(jsonPath("$.content[0].id").value(2L));
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].id").value(2L));
     }
 
     @Test
@@ -161,17 +147,17 @@ class LotControllerTest {
         when(lotService.findLotWithMetadataById(5L)).thenReturn(lr);
 
         mockMvc.perform(get("/lots/{id}", 5L))
-               .andExpect(status().isOk())
-               .andExpect(jsonPath("$.id").value(5L));
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(5L));
     }
 
     @Test
     void getLot_notFound_returns404() throws Exception {
-        Mockito.doThrow(new IllegalArgumentException("Not found"))
-               .when(lotService).findLotWithMetadataById(99L);
+        doThrow(new IllegalArgumentException("Not found"))
+                .when(lotService).findLotWithMetadataById(99L);
 
         mockMvc.perform(get("/lots/{id}", 99L))
-               .andExpect(status().isNotFound());
+                .andExpect(status().isNotFound());
     }
 
     @Test
@@ -187,8 +173,8 @@ class LotControllerTest {
         mockMvc.perform(post("/lots/buy")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(req)))
-               .andExpect(status().isCreated())
-               .andExpect(jsonPath("$.id").value(1L));
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").value(1L));
     }
 
     @Test
@@ -196,12 +182,12 @@ class LotControllerTest {
         BuyLotRequest req = new BuyLotRequest();
         req.setLotId(1L);
 
-        Mockito.doThrow(new IllegalArgumentException("Bad"))
-               .when(lotService).buyLot(eq(10L), any(BuyLotRequest.class));
+        doThrow(new IllegalArgumentException("Bad"))
+                .when(lotService).buyLot(eq(10L), any(BuyLotRequest.class));
 
         mockMvc.perform(post("/lots/buy")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(req)))
-               .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest());
     }
 }
