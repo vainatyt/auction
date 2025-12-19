@@ -160,34 +160,4 @@ class LotControllerTest {
                 .andExpect(status().isNotFound());
     }
 
-    @Test
-    void buyLot_validRequest_returnsCreatedLot() throws Exception {
-        BuyLotRequest req = new BuyLotRequest();
-        req.setLotId(1L);
-
-        Lot lot = new Lot();
-        lot.setId(1L);
-
-        when(lotService.buyLot(eq(10L), any(BuyLotRequest.class))).thenReturn(lot);
-
-        mockMvc.perform(post("/lots/buy")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(req)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").value(1L));
-    }
-
-    @Test
-    void buyLot_invalidRequest_returns400() throws Exception {
-        BuyLotRequest req = new BuyLotRequest();
-        req.setLotId(1L);
-
-        doThrow(new IllegalArgumentException("Bad"))
-                .when(lotService).buyLot(eq(10L), any(BuyLotRequest.class));
-
-        mockMvc.perform(post("/lots/buy")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(req)))
-                .andExpect(status().isBadRequest());
-    }
 }

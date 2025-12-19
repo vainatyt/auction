@@ -37,18 +37,11 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-<<<<<<< HEAD
-@WebMvcTest(LotController.class)
-@ActiveProfiles("test")
-class AuthControllerTest {
-
-=======
 @SpringBootTest
 @AutoConfigureMockMvc
 @TestPropertySource(properties = "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration")
 class AuthControllerTest {
     
->>>>>>> e9f7391f028d91fe8ecc049c65882f9faffe2704
     @Autowired
     private MockMvc mockMvc;
     
