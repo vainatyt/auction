@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.project.auction.models.BuyLot;
 import com.project.auction.models.Lot;
 import com.project.auction.models.MetaDataLot;
 import com.project.auction.models.Photo;
@@ -25,6 +26,7 @@ import com.project.auction.models.User;
 import com.project.auction.pojo.BuyLotRequest;
 import com.project.auction.pojo.CreateLotRequest;
 import com.project.auction.pojo.LotResponse;
+import com.project.auction.repository.BuyLotRepository;
 import com.project.auction.repository.LotRepository;
 import com.project.auction.repository.MetaDataLotRepository;
 import com.project.auction.repository.PhotoRepository;
@@ -43,6 +45,7 @@ public class LotService {
     private final UserRepository userRepository;
     private final MailService mailService;
     private final ImageService imageService;
+    private final BuyLotRepository buyLotRepository;
 
     public LotService(
             LotRepository lotRepository,
@@ -51,7 +54,8 @@ public class LotService {
             TrackableItemRepository trackableItemRepository,
             UserRepository userRepository,
             MailService mailService,
-            ImageService imageService) {
+            ImageService imageService,
+            BuyLotRepository buyLotRepository) {
         this.lotRepository = lotRepository;
         this.metaDataLotRepository = metaDataLotRepository;
         this.photoRepository = photoRepository;
@@ -59,6 +63,7 @@ public class LotService {
         this.userRepository = userRepository;
         this.mailService = mailService;
         this.imageService = imageService;
+        this.buyLotRepository = buyLotRepository;
     }
 
     @Transactional
@@ -132,10 +137,14 @@ public class LotService {
             .collect(Collectors.toList()); 
         mailService.notifyTrack(users, lotResponse);
         log.info("notify users who tracked lot={}",lot.getId());
+        
         for (TrackableItem tracker : trackers) {
             trackableItemRepository.delete(tracker);
             log.info("delete track note for user={} by lot={}",tracker.getUserId(),tracker.getLotId());
         }
+
+        List<BuyLot> buyReqs = buyLotRepository.findByLotId(lotId);
+        buyLotRepository.deleteAll(buyReqs);
 
         MetaDataLot metaDataLot = metaDataLotRepository.findByLotId(lot.getId()).
             orElseThrow(()->{

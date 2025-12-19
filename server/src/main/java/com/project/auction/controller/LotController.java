@@ -2,6 +2,7 @@ package com.project.auction.controller;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -13,12 +14,15 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.project.auction.models.BuyLot;
 import com.project.auction.models.Lot;
 import com.project.auction.models.User;
 import com.project.auction.pojo.BuyLotRequest;
+import com.project.auction.pojo.BuyStatus;
 import com.project.auction.pojo.CreateLotRequest;
 import com.project.auction.pojo.LotResponse;
 import com.project.auction.pojo.MessageResponse;
+import com.project.auction.repository.BuyLotRepository;
 import com.project.auction.repository.UserRepository;
 import com.project.auction.service.LotService;
 
@@ -30,10 +34,14 @@ public class LotController {
     
     private final UserRepository userRepository;
     private final LotService lotService;
+    private final BuyLotRepository buyLotRepository;
 
-    public LotController(UserRepository userRepository, LotService lotService) {
+    public LotController(UserRepository userRepository, 
+                        LotService lotService,
+                        BuyLotRepository buyLotRepository) {
         this.userRepository = userRepository;
         this.lotService = lotService;
+        this.buyLotRepository = buyLotRepository;
     }
 
     @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -109,21 +117,37 @@ public class LotController {
         }
     }
 
-    @PostMapping("/buy")
-    public ResponseEntity<Lot> buyLot(@RequestBody BuyLotRequest buyLotRequest) {
-        User user = getCurrentUser();
+    // старая версия когда запросы обрабатывались сразу
+    // @PostMapping("/buy")
+    // public ResponseEntity<Lot> buyLot(@RequestBody BuyLotRequest buyLotRequest) {
+    //     User user = getCurrentUser();
         
-        try {
-            Lot lot = lotService.buyLot(user.getId(), buyLotRequest);
-            log.info("User {} bought lot {}", user.getName(), lot.getId());
-            return ResponseEntity.status(HttpStatus.CREATED).body(lot);
+    //     try {
+    //         Lot lot = lotService.buyLot(user.getId(), buyLotRequest);
+    //         log.info("User {} bought lot {}", user.getName(), lot.getId());
+    //         return ResponseEntity.status(HttpStatus.CREATED).body(lot);
             
-        } catch (IllegalArgumentException e) {
-            log.warn("Invalid image format for lot {}", buyLotRequest.getLotId(), e);
-            return ResponseEntity.badRequest().build();
-        } catch (RuntimeException e) {
-            log.error("Failed to process buy for user {}", user.getName(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+    //     } catch (IllegalArgumentException e) {
+    //         log.warn("Invalid image format for lot {}", buyLotRequest.getLotId(), e);
+    //         return ResponseEntity.badRequest().build();
+    //     } catch (RuntimeException e) {
+    //         log.error("Failed to process buy for user {}", user.getName(), e);
+    //         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+    //     }
+    // }
+
+    @PostMapping("/buy")
+    public ResponseEntity<BuyLot> buyLot(@RequestBody BuyLotRequest buyLotRequest){
+        User user = getCurrentUser();
+        BuyLot buyLot = new BuyLot(buyLotRequest.getLotId(),
+                                    buyLotRequest.getReqCost(),
+                                    user.getId());
+        buyLot.setStatus(BuyStatus.PENDING);
+        try {
+            BuyLot saved = buyLotRepository.save(buyLot);
+            return ResponseEntity.ok(saved);
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Ошибка сохранения");
         }
     }
     
