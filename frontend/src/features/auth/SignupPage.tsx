@@ -10,7 +10,7 @@ import FreeApi from '../../api/FreeApi'
 import '../../styles/AuthPage.css';
 
 const SingupPage: React.FC = () => {
-  const [username, setName] = useState('');
+  const [username, setUserName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
@@ -60,7 +60,7 @@ const SingupPage: React.FC = () => {
           type="text"
           placeholder="имя"
           value={username}
-          onChange={(e) => setName(e.target.value)}
+          onChange={(e) => setUserName(e.target.value)}
           required
         />
         <input className="auth-input"

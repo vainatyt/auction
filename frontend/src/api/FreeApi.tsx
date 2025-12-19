@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Создаем экземпляр axios
 const OpenApi = axios.create({
-  baseURL: 'http://localhost:8080',
+  baseURL: 'https://localhost:8443',
 });
 
 export default OpenApi;

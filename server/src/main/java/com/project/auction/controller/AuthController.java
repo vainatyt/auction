@@ -73,19 +73,17 @@ public class AuthController {
 
     @PostMapping("/signup")
     public ResponseEntity<MessageResponse> registerUser(@RequestBody SignupRequest signupRequest) {
-        log.debug("User registration attempt: {}", signupRequest.getUsername());
+    log.debug("User registration attempt: {}", signupRequest.getUsername());
 
-        if (userRepository.existsByName(signupRequest.getUsername())) {
-            log.warn("Username already exists: {}", signupRequest.getUsername());
-            return ResponseEntity.badRequest()
-                    .body(new MessageResponse("Error: Username already exists"));
-        }
+    if (userRepository.existsByName(signupRequest.getUsername())) {
+        return ResponseEntity.badRequest()
+            .body(new MessageResponse("Error: Username already exists!"));
+    }
 
-        if (userRepository.existsByEmail(signupRequest.getEmail())) {
-            log.warn("Email already exists: {}", signupRequest.getEmail());
-            return ResponseEntity.badRequest()
-                    .body(new MessageResponse("Error: Email already exists"));
-        }
+    if (userRepository.existsByEmail(signupRequest.getEmail())) {
+        return ResponseEntity.badRequest()
+            .body(new MessageResponse("Error: Email already exists!"));
+    }
 
         try {
             User user = new User(

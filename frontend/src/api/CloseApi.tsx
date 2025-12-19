@@ -3,7 +3,7 @@ import Cookies from 'js-cookie';
 
 // Создаем экземпляр axios
 const CloseApi = axios.create({
-  baseURL: 'http://localhost:8080',
+  baseURL: 'https://localhost:8443',
 });
 
 // Добавляем интерцептор запросов

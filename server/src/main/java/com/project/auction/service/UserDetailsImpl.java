@@ -31,7 +31,7 @@ public class UserDetailsImpl implements UserDetails{
 	}
 
     public static UserDetailsImpl build(User user) {
-        List<GrantedAuthority> authorities = Collections.emptyList();
+        Collection<? extends GrantedAuthority> authorities = Collections.emptyList();
 
 		return new UserDetailsImpl(
 				user.getId(), 
