@@ -28,7 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(LotController.class)
 @ActiveProfiles("test")
-class LotControllerTest {
+class AuthControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
