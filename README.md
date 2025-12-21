@@ -125,5 +125,3 @@ React, TS, CSS, HTML
 Java Spring Boot, Maven
 ## База Данных
 PostgreSQL, JPA
-# Тестирование
-Ручное
