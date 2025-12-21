@@ -19,7 +19,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.project.auction.models.BuyLot;
 import com.project.auction.models.Lot;
-import com.project.auction.models.MetaDataLot;
 import com.project.auction.models.Photo;
 import com.project.auction.models.TrackableItem;
 import com.project.auction.models.User;
@@ -28,7 +27,6 @@ import com.project.auction.pojo.CreateLotRequest;
 import com.project.auction.pojo.LotResponse;
 import com.project.auction.repository.BuyLotRepository;
 import com.project.auction.repository.LotRepository;
-import com.project.auction.repository.MetaDataLotRepository;
 import com.project.auction.repository.PhotoRepository;
 import com.project.auction.repository.TrackableItemRepository;
 import com.project.auction.repository.UserRepository;
@@ -39,7 +37,6 @@ public class LotService {
     private static final Logger log = LoggerFactory.getLogger(LotService.class);
     
     private final LotRepository lotRepository;
-    private final MetaDataLotRepository metaDataLotRepository;
     private final PhotoRepository photoRepository;
     private final TrackableItemRepository trackableItemRepository;
     private final UserRepository userRepository;
@@ -49,7 +46,6 @@ public class LotService {
 
     public LotService(
             LotRepository lotRepository,
-            MetaDataLotRepository metaDataLotRepository,
             PhotoRepository photoRepository,
             TrackableItemRepository trackableItemRepository,
             UserRepository userRepository,
@@ -57,7 +53,6 @@ public class LotService {
             ImageService imageService,
             BuyLotRepository buyLotRepository) {
         this.lotRepository = lotRepository;
-        this.metaDataLotRepository = metaDataLotRepository;
         this.photoRepository = photoRepository;
         this.trackableItemRepository = trackableItemRepository;
         this.userRepository = userRepository;
@@ -74,9 +69,6 @@ public class LotService {
             Lot lot = new Lot(userId, req);
             lot = lotRepository.save(lot);
             log.info("Save lot info: id={}, userId={}", lot.getId(), userId);
-            MetaDataLot metadata = new MetaDataLot(lot.getId(),req.getGoodsName(),req.getGoodsDescription());
-            metaDataLotRepository.save(metadata);
-            log.info("Save meta data: id={}, userId={}", metadata.getId(), userId);
             imageService.savePhoto(lot.getId(), image);
             log.info("Lot created successfully: id={}, userId={}", lot.getId(), userId);
             return lot;
@@ -150,12 +142,6 @@ public class LotService {
         List<BuyLot> buyReqs = buyLotRepository.findByLotId(lotId);
         buyLotRepository.deleteAll(buyReqs);
 
-        MetaDataLot metaDataLot = metaDataLotRepository.findByLotId(lot.getId()).
-            orElseThrow(()->{
-                    log.warn("MetaDataLot not found: id_lot={}",lot.getId());
-                    return new RuntimeException("MetaDataLot not found");
-            });
-        metaDataLotRepository.delete(metaDataLot);
         log.info("delete MetaData lot={}",lotId);
         Photo photo = photoRepository.findByLotId(lotId);
         if(photo != null){
@@ -169,7 +155,7 @@ public class LotService {
     @Transactional(readOnly = true)
     public Page<LotResponse> findUserLotsWithMetadata(Long ownerId, Pageable pageable) {
         log.debug("Finding lots for sellerId={}, page={}", ownerId, pageable.getPageNumber());
-        Page<Object[]> rawPage = lotRepository.findUserLotsWithMetadata(ownerId, pageable);
+        Page<Object[]> rawPage = lotRepository.findUserLotsWithPhoto(ownerId, pageable);
         Page<LotResponse> result = rawPage.map(row -> new LotResponse(
             (String)row[0], (String)row[1], (BigDecimal)row[2],
             (BigDecimal)row[3], (LocalDateTime)row[4], (LocalDateTime)row[5],
@@ -180,7 +166,7 @@ public class LotService {
     @Transactional(readOnly = true)
     public Page<LotResponse> findLotsWithMetadata(Pageable pageable) {
         log.debug("Finding all lots, page={}", pageable.getPageNumber());
-        Page<Object[]> rawPage = lotRepository.findLotsWithMetadata(pageable);
+        Page<Object[]> rawPage = lotRepository.findLotsWithPhoto(pageable);
         Page<LotResponse> result = rawPage.map(row -> new LotResponse(
             (String)row[0], (String)row[1], (BigDecimal)row[2],
             (BigDecimal)row[3], (LocalDateTime)row[4], (LocalDateTime)row[5],
@@ -195,11 +181,7 @@ public class LotService {
                 log.warn("Lot not found: id={}", id);
                 return new IllegalArgumentException("Lot not found: " + id);
             });
-        MetaDataLot meta = metaDataLotRepository.findByLotId(id).orElseThrow(() -> {
-                log.warn("Meta data of lot not found: id={}", id);
-                return new IllegalArgumentException("Meta data of lot not found: " + id);
-            });
-        LotResponse lotResponse = new LotResponse(lot, meta, photoRepository.findUuidByLotId(id));
+        LotResponse lotResponse = new LotResponse(lot, photoRepository.findUuidByLotId(id));
         lotResponse.setOwnerId(lot.getOwnerId());
         return lotResponse;
     }

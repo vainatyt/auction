@@ -29,7 +29,6 @@ import static org.mockito.Mockito.*;
 class LotServiceTest {
 
     @Mock private LotRepository lotRepository;
-    @Mock private MetaDataLotRepository metaDataLotRepository;
     @Mock private PhotoRepository photoRepository;
     @Mock private TrackableItemRepository trackableItemRepository;
     @Mock private UserRepository userRepository;
@@ -52,17 +51,12 @@ class LotServiceTest {
         Lot savedLot = new Lot();
         savedLot.setId(1L);
 
-        MetaDataLot savedMeta = new MetaDataLot();
-        savedMeta.setId(1L);
-
         when(lotRepository.save(any(Lot.class))).thenReturn(savedLot);
-        when(metaDataLotRepository.save(any(MetaDataLot.class))).thenReturn(savedMeta);
 
         Lot result = lotService.createLot(userId, request, image);
 
         assertThat(result.getId()).isEqualTo(1L);
         verify(lotRepository).save(any(Lot.class));
-        verify(metaDataLotRepository).save(any(MetaDataLot.class));
         verify(imageService).savePhoto(eq(1L), eq(image));
     }
 
@@ -89,12 +83,12 @@ void findUserLotsWithMetadata_returnsPage() {
     );
     Page<Object[]> rawPage = new PageImpl<>(content, pageable, 2);
 
-    when(lotRepository.findUserLotsWithMetadata(ownerId, pageable)).thenReturn(rawPage);
+    when(lotRepository.findUserLotsWithPhoto(ownerId, pageable)).thenReturn(rawPage);
 
     Page<LotResponse> result = lotService.findUserLotsWithMetadata(ownerId, pageable);
 
     assertThat(result.getContent()).hasSize(2);
-    verify(lotRepository).findUserLotsWithMetadata(ownerId, pageable);
+    verify(lotRepository).findUserLotsWithPhoto(ownerId, pageable);
 }
 
 @Test
@@ -113,12 +107,12 @@ void findLotsWithMetadata_returnsPage() {
     );
     Page<Object[]> rawPage = new PageImpl<>(content, pageable, 2);
 
-    when(lotRepository.findLotsWithMetadata(pageable)).thenReturn(rawPage);
+    when(lotRepository.findLotsWithPhoto(pageable)).thenReturn(rawPage);
 
     Page<LotResponse> result = lotService.findLotsWithMetadata(pageable);
 
     assertThat(result.getContent()).hasSize(2);
-    verify(lotRepository).findLotsWithMetadata(pageable);
+    verify(lotRepository).findLotsWithPhoto(pageable);
 }
 
     @Test
@@ -128,14 +122,11 @@ void findLotsWithMetadata_returnsPage() {
         lot.setId(lotId);
         lot.setCurrentCost(BigDecimal.TEN);
 
-        MetaDataLot meta = new MetaDataLot();
-        meta.setLotId(lotId);
-        meta.setName("Phone");
-        meta.setDescription("iPhone");
+        lot.setName("Phone");
+        lot.setDescription("iPhone");
         UUID uuid = UUID.randomUUID();
 
         when(lotRepository.findById(lotId)).thenReturn(Optional.of(lot));
-        when(metaDataLotRepository.findByLotId(lotId)).thenReturn(Optional.of(meta));
         when(photoRepository.findUuidByLotId(lotId)).thenReturn(uuid);
 
         LotResponse result = lotService.findLotWithMetadataById(lotId);

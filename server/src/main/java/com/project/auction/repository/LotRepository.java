@@ -18,36 +18,33 @@ public interface LotRepository extends JpaRepository<Lot, Long> {
     Page<Lot> findByBuyerId(Long buyerId, Pageable pageable);
     Page<Lot> findByOwnerId(Long buyerId, Pageable pageable);
 
-    @Query(value = "SELECT m.name, m.description, l.current_cost, l.rate_step, " +
+    @Query(value = "SELECT l.name, l.description, l.current_cost, l.rate_step, " +
                    "l.start_auction, l.end_auction, l.id_lot, p.uuid " +
                    "FROM lots l " +
-                   "LEFT JOIN metadata_lot m ON l.id_lot = m.id_lot " +
                    "LEFT JOIN photo p ON l.id_lot = p.id_lot " +
                    "WHERE l.id_owner = :ownerId", 
-          countQuery = "SELECT COUNT(*) FROM lots l LEFT JOIN metadata_lot m ON l.id_lot = m.id_lot WHERE l.id_owner = :ownerId",
-          nativeQuery = true)
-    Page<Object[]> findUserLotsWithMetadata(
+           countQuery = "SELECT COUNT(*) FROM lots l WHERE l.id_owner = :ownerId",
+           nativeQuery = true)
+    Page<Object[]> findUserLotsWithPhoto(
         @Param("ownerId") Long ownerId, 
         Pageable pageable
     );
 
-    @Query(value = "SELECT m.name, m.description, l.current_cost, l.rate_step, " +
+    @Query(value = "SELECT l.name, l.description, l.current_cost, l.rate_step, " +
                    "l.start_auction, l.end_auction, l.id_lot, p.uuid " +
                    "FROM lots l " +
-                   "LEFT JOIN metadata_lot m ON l.id_lot = m.id_lot " +
                    "LEFT JOIN photo p ON l.id_lot = p.id_lot", 
-          countQuery = "SELECT COUNT(*) FROM lots l LEFT JOIN metadata_lot m ON l.id_lot = m.id_lot",
-          nativeQuery = true)
-    Page<Object[]> findLotsWithMetadata(Pageable pageable);
+           countQuery = "SELECT COUNT(*) FROM lots l",
+           nativeQuery = true)
+    Page<Object[]> findLotsWithPhoto(Pageable pageable);
 
-    @Query(value = "SELECT m.name, m.description, l.current_cost, l.rate_step, " +
+    @Query(value = "SELECT l.name, l.description, l.current_cost, l.rate_step, " +
                    "l.start_auction, l.end_auction, l.id_lot, p.uuid " +
                    "FROM lots l " +
-                   "LEFT JOIN metadata_lot m ON l.id_lot = m.id_lot " +
                    "LEFT JOIN photo p ON l.id_lot = p.id_lot " +
                    "WHERE l.id_lot = :id",
-          nativeQuery = true)
-    Object[] findLotWithMetadata(@Param("id") Long id);
+           nativeQuery = true)
+    Object[] findLotWithPhoto(@Param("id") Long id);
 
     @Query("SELECT l FROM Lot l WHERE l.endAuction < :now")
     List<Lot> findExpiredLots(LocalDateTime now);

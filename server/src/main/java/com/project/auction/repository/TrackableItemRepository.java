@@ -27,22 +27,21 @@ public interface TrackableItemRepository extends JpaRepository<TrackableItem, Lo
     @Query("DELETE FROM TrackableItem t WHERE t.id.userId = :userId AND t.id.lotId = :lotId")
     void deleteByUserIdAndLotId(@Param("userId") Long userId, @Param("lotId") Long lotId);
 
-    @Query(value = "SELECT m.name, m.description, l.current_cost, l.rate_step, " +
-               "l.start_auction, l.end_auction, l.id_lot, p.uuid " + 
-        "FROM lots l " +
-        "LEFT JOIN metadata_lot m ON l.id_lot = m.id_lot " +
-        "INNER JOIN trackable_items t ON l.id_lot = t.id_lot " +
-        "LEFT JOIN photo p ON l.id_lot = p.id_lot " + 
-        "WHERE t.id_user = :userId",
-     countQuery = "SELECT COUNT(DISTINCT l.id_lot) " +
-                  "FROM lots l " +
-                  "INNER JOIN trackable_items t ON l.id_lot = t.id_lot " +
-                  "WHERE t.id_user = :userId", 
-     nativeQuery = true)
-Page<Object[]> findTrackedLotsByUserId(
-    @Param("userId") Long userId,
-    Pageable pageable
-);
+    @Query(value = "SELECT l.name, l.description, l.current_cost, l.rate_step, " +
+                   "l.start_auction, l.end_auction, l.id_lot, p.uuid " + 
+            "FROM lots l " +
+            "INNER JOIN trackable_items t ON l.id_lot = t.id_lot " +
+            "LEFT JOIN photo p ON l.id_lot = p.id_lot " + 
+            "WHERE t.id_user = :userId",
+       countQuery = "SELECT COUNT(DISTINCT l.id_lot) " +
+                    "FROM lots l " +
+                    "INNER JOIN trackable_items t ON l.id_lot = t.id_lot " +
+                    "WHERE t.id_user = :userId", 
+       nativeQuery = true)
+    Page<Object[]> findTrackedLotsByUserId(
+        @Param("userId") Long userId,
+        Pageable pageable
+    );
 
     void deleteById_LotId(Long lotId);
 }

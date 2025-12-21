@@ -40,6 +40,12 @@ public class    Lot {
     @Column(name = "id_owner")
     private Long ownerId;
 
+    @Column(name = "name")
+    private String name;
+
+    @Column(name = "description")
+    private String description;
+
     public Lot(){
     }
 
@@ -49,6 +55,8 @@ public class    Lot {
         currentCost = lot.getCurrentCost();
         rateStep = lot.getRateStep();
         ownerId = owId;
+        name = lot.getGoodsName();
+        description = lot.getGoodsDescription();
     }
 
     // при желании можешь добавить конструктор со всеми полями
@@ -107,5 +115,21 @@ public class    Lot {
 
     public void setOwnerId(Long ownerId) {
         this.ownerId = ownerId;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 }

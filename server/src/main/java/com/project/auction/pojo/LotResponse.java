@@ -6,16 +6,12 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 import com.project.auction.models.Lot;
-import com.project.auction.models.MetaDataLot;
 
 public class LotResponse {
 
     private Long id;
-    // данные по товару (metadata)
     private String name;
     private String description;
-
-    // данные по лоту (Lots)
     private BigDecimal currentCost;
     private BigDecimal rateStep;
     private LocalDateTime startAuction;
@@ -28,15 +24,14 @@ public class LotResponse {
     public LotResponse() {
     }
 
-    public LotResponse(Lot lot, MetaDataLot meta, UUID uuid){
+    public LotResponse(Lot lot, UUID uuid){
         this.id = lot.getId();
-        this.name = meta.getName();
-        this.description = meta.getDescription();
+        this.name = lot.getName();
+        this.description = lot.getDescription();
         this.currentCost = lot.getCurrentCost();
         this.rateStep = lot.getRateStep();
         this.startAuction = lot.getStartAuction();
         this.endAuction = lot.getEndAuction();
-        this.ownerId = lot.getOwnerId();
         this.uuid = uuid;
     }
 
